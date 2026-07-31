@@ -30,9 +30,9 @@
 
 - **יישוב** - נבחר מרשימה שנשאבת מ-IMS לפי שפת ה-HA שלך.
 - **שפת נתונים** - עברית / אנגלית.
-- **מזהה תחנת Weathercloud** (אופציונלי) - המספר בסוף כתובת התחנה (`app.weathercloud.net/d5726468552` → `5726468552`).
+- **מזהה תחנת Weathercloud** (אופציונלי) - המספר בסוף כתובת התחנה (`app.weathercloud.net/d3930075612` → `3930075612`).
 - **שם משתמש + סיסמה** (אופציונלי) - רק לחיישני פנים של תחנה בבעלותך.
-- **תדירויות עדכון** - IMS (ברירת מחדל 60 דק') ו-Weathercloud (ברירת מחדל 10 דק'), ניתנות לשינוי ב-**הגדרות**.
+- **תדירויות עדכון** - IMS (ברירת מחדל 60 דקות) ו-Weathercloud (ברירת מחדל 10 דקות), ניתנות לשינוי ב-**הגדרות**.
 
 ## מאיפה כל חיישן נלקח
 
@@ -49,13 +49,13 @@ Weathercloud דורס ערכים נוכחיים כשהוא מוגדר ומדוו
 
 ## לוגו
 
-הלוגו כלול בתיקייה `custom_components/ims_weathercloud/brand/`. החל מ-Home Assistant **2026.3**, HA מציג אותו ישירות מהתיקייה - בלי PR למאגר brands. בגרסאות ישנות יותר יוצג אייקון גנרי.
+הלוגו כלול בתיקייה `custom_components/ims_weathercloud/brand/`. החל מ-Home Assistant **2026.3**, HA מציג אותו ישירות מהתיקייה. בגרסאות ישנות יותר יוצג אייקון גנרי.
 
-## תודות ורישוי
+## תודות
 
-- [GuyKh](https://github.com/GuyKh/ims-custom-component) ו-[t0mer](https://github.com/t0mer) - IMS וספריית `weatheril`.
-- [MauroDruwel](https://github.com/MauroDruwel/Weathercloud-HA) - Weathercloud וספריית `weathercloud`.
+- [GuyKh](https://github.com/GuyKh) & [t0mer](https://github.com/t0mer) - [`weatheril`](https://github.com/t0mer/py-weatheril).
+- [MauroDruwel](https://github.com/MauroDruwel) - [`weathercloud`](https://github.com/MauroDruwel/Weathercloud).
 
-רישוי MIT; שמרו ייחוס למקורות.
+שמרו ייחוס למקורות.
 
 </div>
