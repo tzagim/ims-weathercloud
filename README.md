@@ -14,7 +14,7 @@
 הרכיב הוא עטיפה דקה סביב שתי ספריות PyPI מתוחזקות (`weatheril`, `weathercloud`).
 
 ## התקנה (HACS)
-### התקנה אוטומטית מומלץ
+### התקנה אוטומטית (מומלץ)
 יש ללחוץ על הפתור הבא (יש לאשר את הוספת המאגר)
 
 [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?category=integration&repository=ims-weathercloud&owner=tzagim)
@@ -23,8 +23,15 @@
 1. HACS ← Integrations ← Menu (⋮) ← **Custom repositories**.
 2. יש להדביק את הכתובת ```https://github.com/tzagim/ims-weathercloud```, קטגוריה **Integration**, והוספה.
 3. ללחוץ על התקנה
-4. **הפעלה מחדש** של Home Assistant.
-5. Settings ← Devices & Services ← **Add Integration** ← חיפוש "IMS + Weathercloud".
+
+### הפעלה
+לאחר הההתקנה יש לבצע **הפעלה מחדש** של Home Assistant.
+
+כאשר המערכת עלתה שוב יש ללחוץ על הכפתור הבא:
+
+[![Open your Home Assistant instance and show your integrations.](https://my.home-assistant.io/badges/integrations.svg)](https://my.home-assistant.io/redirect/integrations/)
+
+ללחוץ על "הוספת שילוב" ולחפש את "IMS + Weathercloud".
 
 ## הגדרה
 
