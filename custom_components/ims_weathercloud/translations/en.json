@@ -1,0 +1,114 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "IMS + Weathercloud",
+        "description": "Pick a language, and optionally a Weathercloud station and refresh intervals.",
+        "data": {
+          "language": "Language",
+          "wc_device_id": "Weathercloud station id (optional) - digits only, without d",
+          "wc_username": "Weathercloud username (optional, for inside sensors)",
+          "wc_password": "Weathercloud password (optional)",
+          "ims_interval": "IMS refresh interval (minutes)",
+          "wc_interval": "Weathercloud refresh interval (minutes)"
+        }
+      },
+      "city": {
+        "title": "Select locality",
+        "description": "Pick a locality from the IMS list.",
+        "data": {
+          "city": "Locality"
+        }
+      }
+    },
+    "error": {
+      "ims_invalid": "Could not fetch data from IMS for that locality.",
+      "weathercloud_invalid": "Could not fetch data from that Weathercloud station id."
+    },
+    "abort": {
+      "already_configured": "This location is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "IMS + Weathercloud options",
+        "data": {
+          "language": "Language",
+          "ims_interval": "IMS refresh interval (minutes)",
+          "wc_interval": "Weathercloud refresh interval (minutes)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "temperature": {
+        "name": "Temperature"
+      },
+      "apparent_temperature": {
+        "name": "Feels like"
+      },
+      "humidity": {
+        "name": "Humidity"
+      },
+      "wind_speed": {
+        "name": "Wind speed"
+      },
+      "wind_speed_avg": {
+        "name": "Wind speed (avg)"
+      },
+      "wind_gust": {
+        "name": "Wind gust"
+      },
+      "wind_bearing": {
+        "name": "Wind bearing"
+      },
+      "wind_bearing_avg": {
+        "name": "Wind bearing (avg)"
+      },
+      "pressure": {
+        "name": "Pressure"
+      },
+      "rain": {
+        "name": "Precipitation"
+      },
+      "rain_rate": {
+        "name": "Rain rate"
+      },
+      "precipitation_probability": {
+        "name": "Chance of rain"
+      },
+      "uv_index": {
+        "name": "UV index"
+      },
+      "dew_point": {
+        "name": "Dew point"
+      },
+      "pm10": {
+        "name": "Particulate matter (PM10)"
+      },
+      "solar_radiation": {
+        "name": "Solar radiation"
+      },
+      "inside_temperature": {
+        "name": "Inside temperature"
+      },
+      "inside_humidity": {
+        "name": "Inside humidity"
+      },
+      "locality": {
+        "name": "Locality"
+      },
+      "condition": {
+        "name": "Current condition"
+      },
+      "ims_last_update": {
+        "name": "Last update (IMS)"
+      },
+      "wc_last_update": {
+        "name": "Last update (Weathercloud)"
+      }
+    }
+  }
+}

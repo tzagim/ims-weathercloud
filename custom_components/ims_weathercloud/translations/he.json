@@ -1,0 +1,114 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "IMS + Weathercloud",
+        "description": "בחירת שפה, ואופציונלית תחנת Weathercloud ותדירויות עדכון.",
+        "data": {
+          "language": "שפה",
+          "wc_device_id": "מזהה תחנת Weathercloud (אופציונלי) - ספרות בלבד ללא d",
+          "wc_username": "שם משתמש Weathercloud (אופציונלי, לחיישני פנים)",
+          "wc_password": "סיסמת Weathercloud (אופציונלי)",
+          "ims_interval": "תדירות עדכון IMS (דקות)",
+          "wc_interval": "תדירות עדכון Weathercloud (דקות)"
+        }
+      },
+      "city": {
+        "title": "בחירת יישוב",
+        "description": "יש לבחור יישוב מרשימת תחנות השירות המטאורולוגי.",
+        "data": {
+          "city": "יישוב"
+        }
+      }
+    },
+    "error": {
+      "ims_invalid": "לא ניתן היה לשלוף נתונים מ-IMS עבור היישוב הזה.",
+      "weathercloud_invalid": "לא ניתן היה לשלוף נתונים ממזהה תחנת ה-Weathercloud הזה."
+    },
+    "abort": {
+      "already_configured": "מיקום זה כבר מוגדר."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "הגדרות IMS + Weathercloud",
+        "data": {
+          "language": "שפה",
+          "ims_interval": "תדירות עדכון IMS (דקות)",
+          "wc_interval": "תדירות עדכון Weathercloud (דקות)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "temperature": {
+        "name": "טמפרטורה"
+      },
+      "apparent_temperature": {
+        "name": "מרגיש כמו"
+      },
+      "humidity": {
+        "name": "לחות"
+      },
+      "wind_speed": {
+        "name": "מהירות רוח"
+      },
+      "wind_speed_avg": {
+        "name": "מהירות רוח ממוצעת"
+      },
+      "wind_gust": {
+        "name": "משב רוח"
+      },
+      "wind_bearing": {
+        "name": "כיוון רוח"
+      },
+      "wind_bearing_avg": {
+        "name": "כיוון רוח ממוצע"
+      },
+      "pressure": {
+        "name": "לחץ אוויר"
+      },
+      "rain": {
+        "name": "משקעים"
+      },
+      "rain_rate": {
+        "name": "עוצמת גשם"
+      },
+      "precipitation_probability": {
+        "name": "סיכוי לגשם"
+      },
+      "uv_index": {
+        "name": "מדד UV"
+      },
+      "dew_point": {
+        "name": "נקודת טל"
+      },
+      "pm10": {
+        "name": "חלקיקים (PM10)"
+      },
+      "solar_radiation": {
+        "name": "קרינה סולארית"
+      },
+      "inside_temperature": {
+        "name": "טמפרטורה פנימית"
+      },
+      "inside_humidity": {
+        "name": "לחות פנימית"
+      },
+      "locality": {
+        "name": "יישוב"
+      },
+      "condition": {
+        "name": "מצב נוכחי"
+      },
+      "ims_last_update": {
+        "name": "עדכון אחרון IMS"
+      },
+      "wc_last_update": {
+        "name": "עדכון אחרון Weathercloud"
+      }
+    }
+  }
+}
