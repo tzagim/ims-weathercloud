@@ -244,6 +244,11 @@ class ImsLastUpdateSensor(_Base):
     def native_value(self):
         return self.coordinator.data.ims_last_update
 
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        # state = IMS observation time; fetched_at = when HA last polled IMS
+        return {"fetched_at": self.coordinator.data.ims_fetched_at}
+
 
 class WcLastUpdateSensor(_Base):
     _attr_device_class = SensorDeviceClass.TIMESTAMP
@@ -261,6 +266,8 @@ class WcLastUpdateSensor(_Base):
     def extra_state_attributes(self) -> dict[str, Any]:
         data = self.coordinator.data
         return {
+            # state = station reading time (epoch); fetched_at = when HA polled
+            "fetched_at": data.wc_fetched_at,
             "weathercloud_online": data.weathercloud_online,
             "station_url": data.station_url,
         }

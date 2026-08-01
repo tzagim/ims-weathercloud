@@ -109,6 +109,11 @@
       "wc_last_update": {
         "name": "Last update (Weathercloud)"
       }
+    },
+    "button": {
+      "refresh": {
+        "name": "Refresh data"
+      }
     }
   }
 }

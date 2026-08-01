@@ -30,6 +30,10 @@ from .const import (
 
 _LOGGER = logging.getLogger(__name__)
 
+# Grace so a scheduler tick that fires a hair early still counts as "due"
+# (prevents a 10-min source from effectively refreshing every 20 min).
+_DUE_GRACE = timedelta(seconds=30)
+
 
 def _safe(obj: Any, *names: str) -> Any:
     for name in names:
@@ -68,8 +72,10 @@ class MergedData:
     forecast_hourly: list[dict[str, Any]] = field(default_factory=list)
     weathercloud_online: bool = False
     location_name: str | None = None
-    ims_last_update: datetime | None = None
-    wc_last_update: datetime | None = None
+    ims_last_update: datetime | None = None   # station/observation time
+    wc_last_update: datetime | None = None     # station reading time (epoch)
+    ims_fetched_at: datetime | None = None     # when HA last polled IMS
+    wc_fetched_at: datetime | None = None      # when HA last polled Weathercloud
     station_url: str | None = None
 
 
@@ -104,6 +110,12 @@ class ImsWeathercloudCoordinator(DataUpdateCoordinator[MergedData]):
         self._wc_cache: Any | None = None
         self._last_ims_fetch: datetime | None = None
         self._last_wc_fetch: datetime | None = None
+        self._force_all = False  # set by the manual Refresh button
+
+    async def async_force_refresh(self) -> None:
+        """Force both sources to refetch now (bypasses the per-source cache)."""
+        self._force_all = True
+        await self.async_request_refresh()
 
     # --- blocking fetchers ----------------------------------------------
     def _fetch_ims(self) -> tuple[Any, Any]:
@@ -223,10 +235,14 @@ class ImsWeathercloudCoordinator(DataUpdateCoordinator[MergedData]):
     async def _async_update_data(self) -> MergedData:
         now = dt_util.utcnow()
 
+        force = self._force_all
+        self._force_all = False
+
         ims_due = (
-            self._ims_cache is None
+            force
+            or self._ims_cache is None
             or self._last_ims_fetch is None
-            or (now - self._last_ims_fetch) >= timedelta(minutes=self._ims_interval)
+            or (now - self._last_ims_fetch) >= timedelta(minutes=self._ims_interval) - _DUE_GRACE
         )
         if ims_due:
             try:
@@ -241,8 +257,9 @@ class ImsWeathercloudCoordinator(DataUpdateCoordinator[MergedData]):
         wc = None
         if self._wc_device_id:
             wc_due = (
-                self._last_wc_fetch is None
-                or (now - self._last_wc_fetch) >= timedelta(minutes=self._wc_interval)
+                force
+                or self._last_wc_fetch is None
+                or (now - self._last_wc_fetch) >= timedelta(minutes=self._wc_interval) - _DUE_GRACE
             )
             if wc_due:
                 self._wc_cache = await self.hass.async_add_executor_job(
@@ -283,5 +300,7 @@ class ImsWeathercloudCoordinator(DataUpdateCoordinator[MergedData]):
             location_name=_safe(ims_current, "location"),
             ims_last_update=ims_last_update,
             wc_last_update=wc_last_update,
+            ims_fetched_at=self._last_ims_fetch,
+            wc_fetched_at=self._last_wc_fetch,
             station_url=station_url,
         )

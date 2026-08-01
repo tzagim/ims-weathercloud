@@ -17,7 +17,7 @@ from homeassistant.components.weather import (
 )
 
 DOMAIN = "ims_weathercloud"
-PLATFORMS = ["weather", "sensor"]
+PLATFORMS = ["weather", "sensor", "button"]
 
 DEFAULT_NAME = "IMS + Weathercloud"
 

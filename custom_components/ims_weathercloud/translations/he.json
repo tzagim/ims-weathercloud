@@ -109,6 +109,11 @@
       "wc_last_update": {
         "name": "עדכון אחרון Weathercloud"
       }
+    },
+    "button": {
+      "refresh": {
+        "name": "רענון נתונים"
+      }
     }
   }
 }
