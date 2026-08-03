@@ -111,6 +111,8 @@ class ImsWeathercloudCoordinator(DataUpdateCoordinator[MergedData]):
         self._last_ims_fetch: datetime | None = None
         self._last_wc_fetch: datetime | None = None
         self._force_all = False  # set by the manual Refresh button
+        self._ims_ok = True      # for throttled failure logging
+        self._wc_ok = True
 
     async def async_force_refresh(self) -> None:
         """Force both sources to refetch now (bypasses the per-source cache)."""
@@ -248,10 +250,18 @@ class ImsWeathercloudCoordinator(DataUpdateCoordinator[MergedData]):
             try:
                 self._ims_cache = await self.hass.async_add_executor_job(self._fetch_ims)
                 self._last_ims_fetch = now
+                if not self._ims_ok:
+                    _LOGGER.info("IMS connection restored")
+                    self._ims_ok = True
             except Exception as err:  # noqa: BLE001
                 if self._ims_cache is None:
                     raise UpdateFailed(f"IMS fetch failed: {err}") from err
-                _LOGGER.warning("IMS refresh failed, using cached data: %s", err)
+                # Warn once, then stay quiet and keep serving the last good data until IMS recovers.
+                if self._ims_ok:
+                    _LOGGER.warning(
+                        "IMS temporarily unavailable, using cached data: %s", err
+                    )
+                    self._ims_ok = False
         ims_current, ims_forecast = self._ims_cache
 
         wc = None
@@ -262,10 +272,21 @@ class ImsWeathercloudCoordinator(DataUpdateCoordinator[MergedData]):
                 or (now - self._last_wc_fetch) >= timedelta(minutes=self._wc_interval) - _DUE_GRACE
             )
             if wc_due:
-                self._wc_cache = await self.hass.async_add_executor_job(
-                    self._fetch_weathercloud
-                )
-                self._last_wc_fetch = now
+                try:
+                    self._wc_cache = await self.hass.async_add_executor_job(
+                        self._fetch_weathercloud
+                    )
+                    self._last_wc_fetch = now
+                    if not self._wc_ok:
+                        _LOGGER.info("Weathercloud connection restored")
+                        self._wc_ok = True
+                except Exception as err:  # noqa: BLE001
+                    if self._wc_ok:
+                        _LOGGER.warning(
+                            "Weathercloud temporarily unavailable, using cached data: %s",
+                            err,
+                        )
+                        self._wc_ok = False
             wc = self._wc_cache
 
         current = self._build_ims_current(ims_current)

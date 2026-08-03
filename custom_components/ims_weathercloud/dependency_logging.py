@@ -1,4 +1,4 @@
-"""Route the weatheril dependency's Loguru output into Home Assistant logging. by @liads"""
+"""Route the weatheril dependency's Loguru output into Home Assistant logging. base on @liads work"""
 from copy import copy
 import logging
 
@@ -7,6 +7,12 @@ from loguru import logger as loguru_logger
 _WEATHERIL_LOGGER_PREFIX = "weatheril"
 _LOGURU_LOGGER_PREFIX = "loguru"
 _LOGURU_DEFAULT_SINK_ID = 0
+
+# To re-enable debugging add in configuration.yaml:
+#   logger:
+#     logs:
+#       custom_components.ims_weathercloud.weatheril: debug
+_DEFAULT_DEPENDENCY_LEVEL = logging.CRITICAL
 
 _loguru_sink_id: int | None = None
 _active_entry_ids: set[str] = set()
@@ -49,6 +55,11 @@ def setup_dependency_logging(entry_id: str) -> None:
             level=0,
             format="{message}",
         )
+
+        # Quiet weatheril's own error by default.
+        logging.getLogger(
+            f"{__package__}.{_WEATHERIL_LOGGER_PREFIX}"
+        ).setLevel(_DEFAULT_DEPENDENCY_LEVEL)
     except Exception:
         _active_entry_ids.discard(entry_id)
         if not _active_entry_ids:
