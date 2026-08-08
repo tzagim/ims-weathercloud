@@ -236,13 +236,15 @@ class ImsWeathercloudOptionsFlow(OptionsFlow):
 
         if user_input is not None:
             self._pending = dict(user_input)
-            if user_input.get(CONF_CUSTOM_ICONS):
-                # go pick which theme to inject into (or create new)
+            was_on = options.get(CONF_CUSTOM_ICONS, data.get(CONF_CUSTOM_ICONS, False))
+            now_on = user_input.get(CONF_CUSTOM_ICONS)
+            prev_target = options.get(CONF_ICONS_TARGET, data.get(CONF_ICONS_TARGET))
+
+            if now_on and (not was_on or not prev_target):
                 return await self.async_step_icons()
-            # icons off -> keep any previous target, save now
-            self._pending[CONF_ICONS_TARGET] = options.get(
-                CONF_ICONS_TARGET, data.get(CONF_ICONS_TARGET, NEW_THEME_SENTINEL)
-            )
+
+            # otherwise keep the existing target (if any) and finish now
+            self._pending[CONF_ICONS_TARGET] = prev_target or NEW_THEME_SENTINEL
             return self.async_create_entry(title="", data=self._pending)
 
         schema = vol.Schema(
