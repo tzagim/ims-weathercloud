@@ -65,7 +65,17 @@
 
 # אייקונים מותאמים אישית
 
-ניתן להגדיר באמצעות ההרחבה אייקונים מותאמים אישית, להלן האייקונים שיוצגו:
+ניתן להגדיר באמצעות ההרחבה אייקונים מותאמים אישית, טרם הפעלת אפשרות זו יש לוודא הוספה השורות הבאות לקובץ ```configuration.yaml```:
+
+```yaml
+frontend:
+  themes: !include_dir_merge_named themes/
+```
+לאחר ההוספה יש להפעיל מחדש את Home Assistant.
+
+במידה ולא הייתה לך ערכת נושא, ההרחבה תייצר לך אחת כזו עם האייקונים החדשים, אם יש לך ערכת נושא, ההרחבה יודעת להזריק אל תוך ערכת הנושא שתבחר, גם אם ערכת הנושא שלך נמצאת במיקום אחר.
+
+להלן האייקונים שיוצגו:
 
 | | | | |
 | - | - | - | - |
@@ -74,7 +84,7 @@
 | <img src="https://raw.githubusercontent.com/tzagim/ims-weathercloud/main/custom_components/ims_weathercloud/weather_icons/rainy.svg" width="128"><br>גשום | <img src="https://raw.githubusercontent.com/tzagim/ims-weathercloud/main/custom_components/ims_weathercloud/weather_icons/snowy-rainy.svg" width="128"><br>גשם ושלג | <img src="https://raw.githubusercontent.com/tzagim/ims-weathercloud/main/custom_components/ims_weathercloud/weather_icons/snowy.svg" width="128"><br>מושלג | <img src="https://raw.githubusercontent.com/tzagim/ims-weathercloud/main/custom_components/ims_weathercloud/weather_icons/sunny.svg" width="128"><br>שמשי |
 | <img src="https://raw.githubusercontent.com/tzagim/ims-weathercloud/main/custom_components/ims_weathercloud/weather_icons/windy-variant.svg" width="128"><br>מעונן ורוחות | <img src="https://raw.githubusercontent.com/tzagim/ims-weathercloud/main/custom_components/ims_weathercloud/weather_icons/windy.svg" width="128"><br>רוחות
 
-לצורך שימוש באפשרות זו ההרחבה ניגשת אל ```http```
+לצורך הפעלת אפשרות זו ההרחבה ניגשת אל ```http```
 
 ## תודות
 
