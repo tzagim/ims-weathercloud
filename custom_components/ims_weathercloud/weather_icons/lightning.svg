@@ -1,0 +1,40 @@
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40">
+    <defs>
+        <style type="text/css"><![CDATA[
+        @keyframes am-weather-cloud-1 {
+            0%, 100% { transform: translate(-5px,0px); }
+            50% { transform: translate(10px,0px); }
+        }
+        .am-weather-cloud-1 {
+            animation: am-weather-cloud-1 7s linear infinite;
+        }
+
+        @keyframes am-weather-stroke {
+            0%, 4%, 8%, 12%, 16%, 20%, 24%, 28%, 100% { transform: translate(0,0); }
+            2%, 10%, 14%, 18% { transform: translate(0.3px,0); }
+            6% { transform: translate(0.5px,0.4px); }
+            22% { transform: translate(1px,0); }
+            26% { transform: translate(-1px,0); }
+            40% { transform: translate(0,0); fill: orange; }
+            61% { fill: orange; }
+            65% { transform: translate(-1px,5px); fill: white; }
+        }
+        .am-weather-stroke {
+            animation: am-weather-stroke 1.11s linear infinite;
+        }
+        ]]></style>
+    </defs>
+    <g id="lightning">
+        <g transform="translate(8,-6)">
+            <g class="am-weather-cloud-1">
+                <path d="M47.7,35.4 c0-4.6-3.7-8.2-8.2-8.2c-1,0-1.9,0.2-2.8,0.5c-0.3-3.4-3.1-6.2-6.6-6.2c-3.7,0-6.7,3-6.7,6.7c0,0.8,0.2,1.6,0.4,2.3 c-0.3-0.1-0.7-0.1-1-0.1c-3.7,0-6.7,3-6.7,6.7c0,3.6,2.9,6.6,6.5,6.7l17.2,0C44.2,43.3,47.7,39.8,47.7,35.4z" fill="#91C0F8" stroke="white" stroke-linejoin="round" stroke-width="1.2" transform="translate(-10,-6) scale(0.6)" />
+            </g>
+            <g>
+                <path d="M47.7,35.4 c0-4.6-3.7-8.2-8.2-8.2c-1,0-1.9,0.2-2.8,0.5c-0.3-3.4-3.1-6.2-6.6-6.2c-3.7,0-6.7,3-6.7,6.7c0,0.8,0.2,1.6,0.4,2.3 c-0.3-0.1-0.7-0.1-1-0.1c-3.7,0-6.7,3-6.7,6.7c0,3.6,2.9,6.6,6.5,6.7l17.2,0C44.2,43.3,47.7,39.8,47.7,35.4z" fill="#57A0EE" stroke="white" stroke-linejoin="round" stroke-width="1.2" transform="translate(-20,-11)" />
+            </g>
+            <g transform="translate(-9,28) scale(1.2)">
+                <polygon class="am-weather-stroke" fill="orange" stroke="white" stroke-width="1" points="14.3,-2.9 20.5,-2.9 16.4,4.3 20.3,4.3 11.5,14.6 14.9,6.9 11.1,6.9" />
+            </g>
+        </g>
+    </g>
+</svg>

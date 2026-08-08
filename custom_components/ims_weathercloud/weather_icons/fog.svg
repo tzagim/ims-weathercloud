@@ -1,0 +1,45 @@
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40">
+    <defs>
+        <style type="text/css">
+            @keyframes am-weather-cloud {
+                0%, 100% { transform: translate(2px,0px); }
+                50% { transform: translate(5px,0px); }
+            }
+            .am-weather-cloud {
+                animation: am-weather-cloud 5s linear infinite;
+            }
+            .fog-1 {
+                animation: fog-1-anim 4.8s linear infinite;
+            }
+            @keyframes fog-1-anim {
+                0%, 100% { transform: translateX(0); }
+                25% { transform: translateX(3px); }
+                75% { transform: translateX(-3px); }
+            }
+
+            .fog-2 {
+                animation: fog-2-anim 4.8s linear infinite;
+            }
+            @keyframes fog-2-anim {
+                0%, 100% { transform: translateX(0); }
+                50% { transform: translateX(3px); }
+            }
+        </style>
+    </defs>
+    
+    <g transform="translate(5, -5)" id="fog">
+        <g class="am-weather-cloud">
+            <path d="M47.7,35.4 c0-4.6-3.7-8.2-8.2-8.2c-1,0-1.9,0.2-2.8,0.5c-0.3-3.4-3.1-6.2-6.6-6.2c-3.7,0-6.7,3-6.7,6.7c0,0.8,0.2,1.6,0.4,2.3 c-0.3-0.1-0.7-0.1-1-0.1c-3.7,0-6.7,3-6.7,6.7c0,3.6,2.9,6.6,6.5,6.7l17.2,0C44.2,43.3,47.7,39.8,47.7,35.4z" fill="#57A0EE" stroke="white" stroke-linejoin="round" stroke-width="1.2" transform="translate(-20,-11)"/>
+        </g>
+        <g transform="translate(0, 8)">
+            <g class="fog-1">
+                <path d="m24.58,25.47 l-17.07,0 c-0.36,0 -0.65,0.45 -0.65,1.04 c0,0.56 0.29,1.02 0.65,1.02 l17.07,0 c0.36,0 0.65,-0.45 0.65,-1.02 c0,-0.58 -0.29,-1.04 -0.65,-1.04z" fill="#57A0EE" stroke="white" stroke-linejoin="round" stroke-width="1.2" />
+            </g>
+        </g>
+        <g transform="translate(0, 11)">
+            <g class="fog-2">
+                <path d="m24.58,25.47 l-17.07,0 c-0.36,0 -0.65,0.45 -0.65,1.04 c0,0.56 0.29,1.02 0.65,1.02 l17.07,0 c0.36,0 0.65,-0.45 0.65,-1.02 c0,-0.58 -0.29,-1.04 -0.65,-1.04z" fill="#57A0EE" stroke="white" stroke-linejoin="round" stroke-width="1.2" />
+            </g>
+        </g>
+    </g>
+</svg>

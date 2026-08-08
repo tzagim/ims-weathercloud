@@ -1,0 +1,15 @@
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40">
+  <g id="windy">
+    <g class="am-weather-wind" fill="none" transform="translate(2, 0)" stroke="#57A0EE" stroke-linecap="round" stroke-width="2">
+      <path stroke-dasharray="100 10" d="M15.5 8A4 4 0 1 1 19 14H5">
+        <animate attributeName="stroke-dashoffset" dur="3s" repeatCount="indefinite" values="0; 160" begin="0s" />
+      </path>
+      <path stroke-dasharray="100 16" d="M29.5 14A4 4 0 1 1 33 20H1">
+        <animate attributeName="stroke-dashoffset" dur="3s" repeatCount="indefinite" values="0; 160" begin="0.5s" />
+      </path>
+      <path stroke-dasharray="100 10" d="M18.5 32A4 4 0 1 0 22 26H10">
+        <animate attributeName="stroke-dashoffset" dur="3s" repeatCount="indefinite" values="0; 160" begin="0.25s" />
+      </path>
+    </g>
+  </g>
+</svg>

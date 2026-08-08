@@ -23,7 +23,11 @@ from homeassistant.helpers.selector import (
     SelectSelectorMode,
 )
 
+from .theme_installer import NEW_THEME_SENTINEL, async_discover_themes
 from .const import (
+    CONF_CUSTOM_ICONS,
+    CONF_ICONS_TARGET,
+    THEME_NAME,
     CONF_CITY,
     CONF_IMS_INTERVAL,
     CONF_LANGUAGE,
@@ -143,6 +147,7 @@ class ImsWeathercloudConfigFlow(ConfigFlow, domain=DOMAIN):
                 CONF_LANGUAGE: user_input[CONF_LANGUAGE],
                 CONF_IMS_INTERVAL: int(user_input[CONF_IMS_INTERVAL]),
                 CONF_WC_INTERVAL: int(user_input[CONF_WC_INTERVAL]),
+                CONF_CUSTOM_ICONS: bool(user_input.get(CONF_CUSTOM_ICONS, False)),
             }
             wc_device = str(user_input.get(CONF_WC_DEVICE_ID, "")).strip()
             if wc_device:
@@ -161,6 +166,7 @@ class ImsWeathercloudConfigFlow(ConfigFlow, domain=DOMAIN):
                 vol.Optional(CONF_WC_PASSWORD, default=""): str,
                 vol.Optional(CONF_IMS_INTERVAL, default=DEFAULT_IMS_INTERVAL): _interval_selector(),
                 vol.Optional(CONF_WC_INTERVAL, default=DEFAULT_WC_INTERVAL): _interval_selector(),
+                vol.Optional(CONF_CUSTOM_ICONS, default=False): bool,
             }
         )
         return self.async_show_form(step_id="user", data_schema=schema)
@@ -216,19 +222,29 @@ class ImsWeathercloudConfigFlow(ConfigFlow, domain=DOMAIN):
 
 
 class ImsWeathercloudOptionsFlow(OptionsFlow):
-    """Change language and both refresh intervals after setup."""
+    """Options: settings + optional custom-icons theme picker (second screen)."""
 
     def __init__(self, config_entry: ConfigEntry) -> None:
         self._config_entry = config_entry
+        self._pending: dict[str, Any] = {}
 
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
-        if user_input is not None:
-            return self.async_create_entry(title="", data=user_input)
-
         data = self._config_entry.data
         options = self._config_entry.options
+
+        if user_input is not None:
+            self._pending = dict(user_input)
+            if user_input.get(CONF_CUSTOM_ICONS):
+                # go pick which theme to inject into (or create new)
+                return await self.async_step_icons()
+            # icons off -> keep any previous target, save now
+            self._pending[CONF_ICONS_TARGET] = options.get(
+                CONF_ICONS_TARGET, data.get(CONF_ICONS_TARGET, NEW_THEME_SENTINEL)
+            )
+            return self.async_create_entry(title="", data=self._pending)
+
         schema = vol.Schema(
             {
                 vol.Required(
@@ -243,6 +259,40 @@ class ImsWeathercloudOptionsFlow(OptionsFlow):
                     CONF_WC_INTERVAL,
                     default=options.get(CONF_WC_INTERVAL, data.get(CONF_WC_INTERVAL, DEFAULT_WC_INTERVAL)),
                 ): _interval_selector(),
+                vol.Required(
+                    CONF_CUSTOM_ICONS,
+                    default=options.get(CONF_CUSTOM_ICONS, data.get(CONF_CUSTOM_ICONS, False)),
+                ): bool,
             }
         )
         return self.async_show_form(step_id="init", data_schema=schema)
+
+    async def async_step_icons(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        if user_input is not None:
+            self._pending[CONF_ICONS_TARGET] = user_input[CONF_ICONS_TARGET]
+            return self.async_create_entry(title="", data=self._pending)
+
+        themes = await async_discover_themes(self.hass)
+        options = [
+            SelectOptionDict(value=NEW_THEME_SENTINEL, label=f"➕ New theme ({THEME_NAME})")
+        ] + [SelectOptionDict(value=name, label=name) for name in themes]
+
+        prev = self._config_entry.options.get(
+            CONF_ICONS_TARGET,
+            self._config_entry.data.get(CONF_ICONS_TARGET, NEW_THEME_SENTINEL),
+        )
+        if prev not in themes and prev != NEW_THEME_SENTINEL:
+            prev = NEW_THEME_SENTINEL
+
+        schema = vol.Schema(
+            {
+                vol.Required(CONF_ICONS_TARGET, default=prev): SelectSelector(
+                    SelectSelectorConfig(
+                        options=options, mode=SelectSelectorMode.DROPDOWN
+                    )
+                )
+            }
+        )
+        return self.async_show_form(step_id="icons", data_schema=schema)
