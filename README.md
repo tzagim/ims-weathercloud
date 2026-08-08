@@ -74,7 +74,7 @@
 | <img src="https://raw.githubusercontent.com/tzagim/ims-weathercloud/main/custom_components/ims_weathercloud/weather_icons/rainy.svg" width="128"><br>גשום | <img src="https://raw.githubusercontent.com/tzagim/ims-weathercloud/main/custom_components/ims_weathercloud/weather_icons/snowy-rainy.svg" width="128"><br>גשם ושלג | <img src="https://raw.githubusercontent.com/tzagim/ims-weathercloud/main/custom_components/ims_weathercloud/weather_icons/snowy.svg" width="128"><br>מושלג | <img src="https://raw.githubusercontent.com/tzagim/ims-weathercloud/main/custom_components/ims_weathercloud/weather_icons/sunny.svg" width="128"><br>שימשי |
 | <img src="https://raw.githubusercontent.com/tzagim/ims-weathercloud/main/custom_components/ims_weathercloud/weather_icons/windy-variant.svg" width="128"><br>מעונן ורוחות | <img src="https://raw.githubusercontent.com/tzagim/ims-weathercloud/main/custom_components/ims_weathercloud/weather_icons/windy.svg" width="128"><br>מעונן
 
-לצורך שימוש באפשרות זו נדרשת גישה אל ```http```
+לצורך שימוש באפשרות זו ההרחבה ניגשת אל ```http```
 
 ## תודות
 
