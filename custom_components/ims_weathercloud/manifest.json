@@ -5,6 +5,9 @@
     "@tzagim"
   ],
   "config_flow": true,
+  "dependencies": [
+    "http"
+  ],
   "documentation": "https://github.com/tzagim/ims-weathercloud",
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/tzagim/ims-weathercloud/issues",
