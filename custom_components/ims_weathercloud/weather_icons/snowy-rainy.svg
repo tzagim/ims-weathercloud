@@ -1,0 +1,52 @@
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40">
+  <defs>
+    <style type="text/css">
+      @keyframes am-weather-snow {
+        0% { transform: translate(0, 0); }
+        33.33% { transform: translate(-1.2px, 2px); }
+        66.66% { transform: translate(1.4px, 4px); opacity: 1; }
+        100% { transform: translate(-1.6px, 6px); opacity: 0; }
+      }
+      .am-weather-snow-1 {
+        animation: am-weather-snow 2s linear infinite;
+      }
+
+      @keyframes am-weather-rain {
+        0% { stroke-dashoffset: 0; }
+        100% { stroke-dashoffset: -100; }
+      }
+      .am-weather-rain-1 {
+        animation: am-weather-rain 8s linear infinite;
+      }
+      .am-weather-rain-2 {
+        animation: am-weather-rain 8s linear infinite 0.25s;
+      }
+
+      @keyframes am-weather-cloud-3 {
+        0%, 100% { transform: translate(0, 0); }
+        50% { transform: translate(2px, 0); }
+      }
+      .am-weather-cloud-3 {
+        animation: am-weather-cloud-3 3s linear infinite;
+      }
+    </style>
+  </defs>
+  
+  <g transform="translate(5,-5)" id="snowy-rainy">
+    <g class="am-weather-cloud-3">
+      <path transform="translate(-20,-11)" d="m47.7 35.4c0-4.6-3.7-8.2-8.2-8.2-1 0-1.9 0.2-2.8 0.5-0.3-3.4-3.1-6.2-6.6-6.2-3.7 0-6.7 3-6.7 6.7 0 0.8 0.2 1.6 0.4 2.3-0.3-0.1-0.7-0.1-1-0.1-3.7 0-6.7 3-6.7 6.7 0 3.6 2.9 6.6 6.5 6.7h17.2c4.4-0.5 7.9-4 7.9-8.4z" fill="#57a0ee" stroke="#fff" stroke-linejoin="round" stroke-width="1.2" />
+    </g>
+    <g class="am-weather-snow-1">
+      <g transform="translate(11,25)" fill="none" stroke="#57a0ee" stroke-linecap="round">
+        <line transform="translate(0,9)" y1="-2.5" y2="2.5" stroke-width="1.2" />
+        <line transform="rotate(45,-10.864,4.5)" y1="-2.5" y2="2.5" />
+        <line transform="rotate(90,-4.5,4.5)" y1="-2.5" y2="2.5" />
+        <line transform="rotate(135,-1.864,4.5)" y1="-2.5" y2="2.5" />
+      </g>
+    </g>
+    <g transform="rotate(10,-198.74,98.01)" fill="none" stroke="#91c0f8" stroke-dasharray="4, 7" stroke-linecap="round" stroke-width="2">
+      <line class="am-weather-rain-1" transform="translate(-10,1)" y2="8" />
+      <line class="am-weather-rain-2" transform="translate(5,-1)" y2="8" />
+    </g>
+  </g>
+</svg>

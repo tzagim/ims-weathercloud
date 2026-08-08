@@ -10,7 +10,8 @@
           "wc_username": "Weathercloud username (optional, for inside sensors)",
           "wc_password": "Weathercloud password (optional)",
           "ims_interval": "IMS refresh interval (minutes)",
-          "wc_interval": "Weathercloud refresh interval (minutes)"
+          "wc_interval": "Weathercloud refresh interval (minutes)",
+          "custom_icons": "Use custom weather icons"
         }
       },
       "city": {
@@ -36,7 +37,15 @@
         "data": {
           "language": "Language",
           "ims_interval": "IMS refresh interval (minutes)",
-          "wc_interval": "Weathercloud refresh interval (minutes)"
+          "wc_interval": "Weathercloud refresh interval (minutes)",
+          "custom_icons": "Use custom weather icons"
+        }
+      },
+      "icons": {
+        "title": "Custom weather icons",
+        "description": "Choose which theme to add the weather icons to, or create a new one.",
+        "data": {
+          "icons_target": "Target theme"
         }
       }
     }
@@ -114,6 +123,12 @@
       "refresh": {
         "name": "Refresh data"
       }
+    }
+  },
+  "issues": {
+    "themes_not_loaded": {
+      "title": "Custom weather icons theme not active",
+      "description": "Your configuration.yaml does not load themes, so the custom weather-icon theme cannot appear. Add this to configuration.yaml and restart:\n\nfrontend:\n  themes: !include_dir_merge_named themes/"
     }
   }
 }

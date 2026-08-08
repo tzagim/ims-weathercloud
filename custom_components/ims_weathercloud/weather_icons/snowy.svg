@@ -1,0 +1,158 @@
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40">
+    <defs>
+        <style type="text/css">
+        @keyframes am-weather-cloud-2 {
+            0%, 100% { transform: translate(0px, 0px); }
+            50% { transform: translate(2px, 0px); }
+        }
+        .am-weather-cloud-2 {
+            animation: am-weather-cloud-2 3s linear infinite;
+        }
+
+        @keyframes am-weather-snow-soft-1 {
+            0% { transform: translate(0, 0); opacity: 0; }
+            20% { opacity: 0.9; }
+            80% { opacity: 0.9; }
+            100% { transform: translate(-1.5px, 8px); opacity: 0; }
+        }
+
+        @keyframes am-weather-snow-soft-2 {
+            0% { transform: translate(0, 0); opacity: 0; }
+            25% { opacity: 1; }
+            75% { opacity: 1; }
+            100% { transform: translate(1.8px, 9px); opacity: 0; }
+        }
+
+        @keyframes am-weather-snow-soft-3 {
+            0% { transform: translate(0, 0); opacity: 0; }
+            20% { opacity: 0.8; }
+            80% { opacity: 0.8; }
+            100% { transform: translate(-0.8px, 7px); opacity: 0; }
+        }
+
+        .am-flk-1 { animation: am-weather-snow-soft-1 2.5s linear infinite; }
+        .am-flk-2 { animation: am-weather-snow-soft-2 3.1s linear infinite; }
+        .am-flk-3 { animation: am-weather-snow-soft-3 2.8s linear infinite; }
+        .am-flk-4 { animation: am-weather-snow-soft-1 3.4s linear infinite; }
+        .am-flk-5 { animation: am-weather-snow-soft-2 2.7s linear infinite; }
+        .am-flk-6 { animation: am-weather-snow-soft-3 2.2s linear infinite; }
+        .am-flk-7 { animation: am-weather-snow-soft-1 3.8s linear infinite; }
+        .am-flk-8 { animation: am-weather-snow-soft-2 2.4s linear infinite; }
+        </style>
+        <g id="snowflake-sm" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <g stroke="white" stroke-width="0.7">
+                <line x1="0" y1="-1.3" x2="0" y2="1.3" />
+                <path d="M-0.4,-0.8 L0,-1.1 L0.4,-0.8" />
+                <path d="M-0.4,0.8 L0,1.1 L0.4,0.8" />
+                <g transform="rotate(60)">
+                    <line x1="0" y1="-1.3" x2="0" y2="1.3" />
+                    <path d="M-0.4,-0.8 L0,-1.1 L0.4,-0.8" />
+                    <path d="M-0.4,0.8 L0,1.1 L0.4,0.8" />
+                </g>
+                <g transform="rotate(120)">
+                    <line x1="0" y1="-1.3" x2="0" y2="1.3" />
+                    <path d="M-0.4,-0.8 L0,-1.1 L0.4,-0.8" />
+                    <path d="M-0.4,0.8 L0,1.1 L0.4,0.8" />
+                </g>
+            </g>
+            <g stroke="#57A0EE" stroke-width="0.35">
+                <line x1="0" y1="-1.3" x2="0" y2="1.3" />
+                <path d="M-0.4,-0.8 L0,-1.1 L0.4,-0.8" />
+                <path d="M-0.4,0.8 L0,1.1 L0.4,0.8" />
+                <g transform="rotate(60)">
+                    <line x1="0" y1="-1.3" x2="0" y2="1.3" />
+                    <path d="M-0.4,-0.8 L0,-1.1 L0.4,-0.8" />
+                    <path d="M-0.4,0.8 L0,1.1 L0.4,0.8" />
+                </g>
+                <g transform="rotate(120)">
+                    <line x1="0" y1="-1.3" x2="0" y2="1.3" />
+                    <path d="M-0.4,-0.8 L0,-1.1 L0.4,-0.8" />
+                    <path d="M-0.4,0.8 L0,1.1 L0.4,0.8" />
+                </g>
+            </g>
+        </g>
+        <g id="snowflake-md" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <g stroke="white" stroke-width="0.8">
+                <line x1="0" y1="-2" x2="0" y2="2" />
+                <path d="M-0.6,-1.2 L0,-1.7 L0.6,-1.2" />
+                <path d="M-0.6,1.2 L0,1.7 L0.6,1.2" />
+                <g transform="rotate(60)">
+                    <line x1="0" y1="-2" x2="0" y2="2" />
+                    <path d="M-0.6,-1.2 L0,-1.7 L0.6,-1.2" />
+                    <path d="M-0.6,1.2 L0,1.7 L0.6,1.2" />
+                </g>
+                <g transform="rotate(120)">
+                    <line x1="0" y1="-2" x2="0" y2="2" />
+                    <path d="M-0.6,-1.2 L0,-1.7 L0.6,-1.2" />
+                    <path d="M-0.6,1.2 L0,1.7 L0.6,1.2" />
+                </g>
+            </g>
+            <g stroke="#57A0EE" stroke-width="0.4">
+                <line x1="0" y1="-2" x2="0" y2="2" />
+                <path d="M-0.6,-1.2 L0,-1.7 L0.6,-1.2" />
+                <path d="M-0.6,1.2 L0,1.7 L0.6,1.2" />
+                <g transform="rotate(60)">
+                    <line x1="0" y1="-2" x2="0" y2="2" />
+                    <path d="M-0.6,-1.2 L0,-1.7 L0.6,-1.2" />
+                    <path d="M-0.6,1.2 L0,1.7 L0.6,1.2" />
+                </g>
+                <g transform="rotate(120)">
+                    <line x1="0" y1="-2" x2="0" y2="2" />
+                    <path d="M-0.6,-1.2 L0,-1.7 L0.6,-1.2" />
+                    <path d="M-0.6,1.2 L0,1.7 L0.6,1.2" />
+                </g>
+            </g>
+        </g>
+        <g id="snowflake-lg" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <g stroke="white" stroke-width="0.9">
+                <line x1="0" y1="-2.6" x2="0" y2="2.6" />
+                <path d="M-0.8,-1.5 L0,-2.1 L0.8,-1.5" />
+                <path d="M-0.8,1.5 L0,2.1 L0.8,1.5" />
+                <g transform="rotate(60)">
+                    <line x1="0" y1="-2.6" x2="0" y2="2.6" />
+                    <path d="M-0.8,-1.5 L0,-2.1 L0.8,-1.5" />
+                    <path d="M-0.8,1.5 L0,2.1 L0.8,1.5" />
+                </g>
+                <g transform="rotate(120)">
+                    <line x1="0" y1="-2.6" x2="0" y2="2.6" />
+                    <path d="M-0.8,-1.5 L0,-2.1 L0.8,-1.5" />
+                    <path d="M-0.8,1.5 L0,2.1 L0.8,1.5" />
+                </g>
+            </g>
+            <g stroke="#57A0EE" stroke-width="0.45">
+                <line x1="0" y1="-2.6" x2="0" y2="2.6" />
+                <path d="M-0.8,-1.5 L0,-2.1 L0.8,-1.5" />
+                <path d="M-0.8,1.5 L0,2.1 L0.8,1.5" />
+                <g transform="rotate(60)">
+                    <line x1="0" y1="-2.6" x2="0" y2="2.6" />
+                    <path d="M-0.8,-1.5 L0,-2.1 L0.8,-1.5" />
+                    <path d="M-0.8,1.5 L0,2.1 L0.8,1.5" />
+                </g>
+                <g transform="rotate(120)">
+                    <line x1="0" y1="-2.6" x2="0" y2="2.6" />
+                    <path d="M-0.8,-1.5 L0,-2.1 L0.8,-1.5" />
+                    <path d="M-0.8,1.5 L0,2.1 L0.8,1.5" />
+                </g>
+            </g>
+        </g>
+    </defs>
+
+    <g id="snowy" transform="translate(0, 0)">
+        <g>
+            <g class="am-weather-cloud-2">
+                <path d="M47.7,35.4c0-4.6-3.7-8.2-8.2-8.2c-1,0-1.9,0.2-2.8,0.5c-0.3-3.4-3.1-6.2-6.6-6.2c-3.7,0-6.7,3-6.7,6.7c0,0.8,0.2,1.6,0.4,2.3 c-0.3-0.1-0.7-0.1-1-0.1c-3.7,0-6.7,3-6.7,6.7c0,3.6,2.9,6.6,6.5,6.7l17.2,0C44.2,43.3,47.7,39.8,47.7,35.4z" fill="#57A0EE" stroke="white" stroke-linejoin="round" stroke-width="1.2" transform="translate(-15,-16)"/>
+            </g>
+            
+            <g>
+                <use href="#snowflake-md" class="am-flk-1" x="6" y="27" />
+                <use href="#snowflake-sm" class="am-flk-2" x="9" y="26" />
+                <use href="#snowflake-lg" class="am-flk-3" x="12" y="27" />
+                <use href="#snowflake-sm" class="am-flk-4" x="15" y="26" />
+                <use href="#snowflake-lg" class="am-flk-5" x="18" y="27" />
+                <use href="#snowflake-sm" class="am-flk-6" x="21" y="26" />
+                <use href="#snowflake-md" class="am-flk-7" x="24" y="26" />
+                <use href="#snowflake-sm" class="am-flk-8" x="27" y="27" />
+            </g>
+        </g>
+    </g>
+</svg>

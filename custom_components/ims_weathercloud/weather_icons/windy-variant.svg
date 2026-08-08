@@ -1,0 +1,44 @@
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40">
+    <defs>
+        <style type="text/css">
+            @keyframes am-weather-cloud-1 {
+                0%, 100% { transform: translate(-5px, 0px); }
+                50% { transform: translate(10px, 0px); }
+            }
+            .am-weather-cloud-1 {
+                animation: am-weather-cloud-1 7s linear infinite;
+            }
+
+            @keyframes am-weather-cloud-2 {
+                0%, 100% { transform: translate(0px, 0px); }
+                50% { transform: translate(2px, 0px); }
+            }
+            .am-weather-cloud-2 {
+                animation: am-weather-cloud-2 3s linear infinite;
+            }
+
+            @keyframes am-weather-wind {
+                0% { stroke-dashoffset: 0; }
+                100% { stroke-dashoffset: -160; }
+            }
+            .am-weather-wind-bottom {
+                animation: am-weather-wind 3s linear infinite 0.25s;
+            }
+        </style>
+    </defs>
+
+    <g id="windy-variant">
+        <g transform="translate(0, 0)">
+            <g class="am-weather-cloud-1">
+                <path d="M47.7,35.4 c0-4.6-3.7-8.2-8.2-8.2c-1,0-1.9,0.2-2.8,0.5c-0.3-3.4-3.1-6.2-6.6-6.2c-3.7,0-6.7,3-6.7,6.7c0,0.8,0.2,1.6,0.4,2.3 c-0.3-0.1-0.7-0.1-1-0.1c-3.7,0-6.7,3-6.7,6.7c0,3.6,2.9,6.6,6.5,6.7l17.2,0C44.2,43.3,47.7,39.8,47.7,35.4z" fill="#91C0F8" stroke="white" stroke-linejoin="round" stroke-width="1.2" transform="translate(-4, -12) scale(0.6)"></path>
+            </g>
+            <g class="am-weather-cloud-2">
+                <path d="M47.7,35.4 c0-4.6-3.7-8.2-8.2-8.2c-1,0-1.9,0.2-2.8,0.5c-0.3-3.4-3.1-6.2-6.6-6.2c-3.7,0-6.7,3-6.7,6.7c0,0.8,0.2,1.6,0.4,2.3 c-0.3-0.1-0.7-0.1-1-0.1c-3.7,0-6.7,3-6.7,6.7c0,3.6,2.9,6.6,6.5,6.7l17.2,0C44.2,43.3,47.7,39.8,47.7,35.4z" fill="#57A0EE" stroke="white" stroke-linejoin="round" stroke-width="1.2" transform="translate(-15, -15)"></path>
+            </g>
+        </g>
+
+        <g class="am-weather-wind-bottom" transform="translate(0, 0)" fill="none" stroke="#57A0EE" stroke-linecap="round" stroke-width="2">
+            <path stroke-dasharray="150 10" d="M21 36.9A4 4 0 1 0 24.5 30.9H7.5"></path>
+        </g>
+    </g>
+</svg>

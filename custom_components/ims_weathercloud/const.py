@@ -157,3 +157,30 @@ IMS_CITIES: dict[str, str] = {
     "271": "Mamshit", "272": "Shivta", "273": "Ben-Gurion's Tomb", "274": "En Avdat",
     "275": "Avdat", "277": "Hay-Bar Yotvata", "278": "Coral Beach",
 }
+
+# --- custom weather icons (theme) ---------------------------------------
+CONF_CUSTOM_ICONS = "custom_icons"
+CONF_ICONS_TARGET = "icons_target"  # theme to inject into, or "__new__"
+THEME_NAME = "weather_animation_icons"
+THEME_FILE = "weather_animation_icons.yaml"
+ICONS_DIRNAME = "weather_icons"
+ICONS_URL = "/ims_weathercloud/weather_icons"
+PROFILE_URL = "https://my.home-assistant.io/redirect/profile"
+
+WEATHER_ICON_MAP = {
+    "clear-night": "clear-night.svg",
+    "cloudy": "cloudy.svg",
+    "exceptional": "exceptional.svg",
+    "fog": "fog.svg",
+    "hail": "hail.svg",
+    "lightning": "lightning.svg",
+    "lightning-rainy": "lightning.svg",
+    "partlycloudy": "partlycloudy.svg",
+    "pouring": "pouring.svg",
+    "rainy": "rainy.svg",
+    "snowy": "snowy.svg",
+    "snowy-rainy": "snowy-rainy.svg",
+    "sunny": "sunny.svg",
+    "windy": "windy.svg",
+    "windy-variant": "windy-variant.svg",
+}

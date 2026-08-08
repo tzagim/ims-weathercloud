@@ -10,7 +10,8 @@
           "wc_username": "שם משתמש Weathercloud (אופציונלי, לחיישני פנים)",
           "wc_password": "סיסמת Weathercloud (אופציונלי)",
           "ims_interval": "תדירות עדכון IMS (דקות)",
-          "wc_interval": "תדירות עדכון Weathercloud (דקות)"
+          "wc_interval": "תדירות עדכון Weathercloud (דקות)",
+          "custom_icons": "שימוש באייקוני מזג אוויר מותאמים"
         }
       },
       "city": {
@@ -36,7 +37,15 @@
         "data": {
           "language": "שפה",
           "ims_interval": "תדירות עדכון IMS (דקות)",
-          "wc_interval": "תדירות עדכון Weathercloud (דקות)"
+          "wc_interval": "תדירות עדכון Weathercloud (דקות)",
+          "custom_icons": "שימוש באייקוני מזג אוויר מותאמים"
+        }
+      },
+      "icons": {
+        "title": "אייקוני מזג אוויר מותאמים",
+        "description": "יש לבחור לאיזו ערכת נושא להוסיף את אייקוני מזג האוויר, או ליצור חדשה.",
+        "data": {
+          "icons_target": "ערכת נושא יעד"
         }
       }
     }
@@ -114,6 +123,12 @@
       "refresh": {
         "name": "רענון נתונים"
       }
+    }
+  },
+  "issues": {
+    "themes_not_loaded": {
+      "title": "ערכת אייקוני מזג האוויר לא פעילה",
+      "description": "ה-configuration.yaml לא טוען themes, ולכן ערכת האייקונים לא תופיע. יש להוסיף אל configuration.yaml ולהפעיל את המערכת מחדש:\n\nfrontend:\n  themes: !include_dir_merge_named themes/"
     }
   }
 }

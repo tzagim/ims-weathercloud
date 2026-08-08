@@ -1,0 +1,48 @@
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40">
+    <defs>
+        <style type="text/css">
+            @keyframes am-weather-moon {
+                0%, 100% { transform: scale(0.72) rotate(-40deg); }
+                50% { transform: scale(0.72) rotate(-5deg); }
+            }
+            .am-weather-moon {
+                animation: am-weather-moon 6s linear infinite;
+                transform-origin: 11px 14px 0;
+            }
+
+            @keyframes am-weather-star {
+                0% { opacity: 0; }
+                50% { opacity: 1; }
+                100% { opacity: 0; }
+            }
+            .star-1 { animation: am-weather-star 3.5s ease-in-out 0.5s infinite; transform-origin: center; }
+            .star-2 { animation: am-weather-star 4s ease-in-out 1s infinite; transform-origin: center; }
+            .star-3 { animation: am-weather-star 3s ease-in-out infinite; transform-origin: center; }        
+            .star-4 { animation: am-weather-star 4.5s ease-in-out 1.5s infinite; transform-origin: center; }
+        </style>
+        <g id="star-shape">
+            <path d="M 0,-2.5 Q 0,0 2.5,0 Q 0,0 0,2.5 Q 0,0 -2.5,0 Q 0,0 0,-2.5 Z" fill="#FFA500" stroke="#FFA500" stroke-width="0.4" stroke-linejoin="round"/>
+        </g>
+    </defs>
+    
+    <g id="clear-night">
+        <g transform="translate(7,5)">
+            <g class="star-1" transform="translate(-8, -5) scale(0.6)">
+                <use href="#star-shape"/>
+            </g>
+            <g class="star-2" transform="translate(27, 0) scale(0.8)">
+                <use href="#star-shape"/>
+            </g>
+            <g class="star-3" transform="translate(30, 19) scale(1.4)">
+                <use href="#star-shape"/>
+            </g>
+            <g class="star-4" transform="translate(-3, 26) scale(0.9)">
+                <use href="#star-shape"/>
+            </g>
+            <g class="am-weather-moon">
+                <path d="M23.5,0.5 C20.5,-0.8 17,-1.5 13.5,-1.5 C5, -1.5 -1.5,5.5 -1.5,14 S5,29.5 13.5,29.5 C17,29.5 20.5,28.8 23.5,27.5 C16.5,23 12,19 12,14 S16.5,5 23.5,0.5 Z" 
+                      fill="orange" stroke="orange" stroke-linejoin="round" stroke-linecap="round" stroke-width="2"/>
+            </g>
+        </g>
+    </g>
+</svg>
