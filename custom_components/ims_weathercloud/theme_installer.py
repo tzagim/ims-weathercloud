@@ -26,11 +26,9 @@ _STATIC_KEY = "_icons_static_registered"
 _ISSUE_THEMES_NOT_LOADED = "themes_not_loaded"
 _NOTIFY_ID = "ims_weathercloud_custom_icons"
 
-NEW_THEME_SENTINEL = "__new__"                       # dropdown value: create new
-_COMMENT_MARKER = "# Animated weather icons"         # our marker line
+NEW_THEME_SENTINEL = "__new__"
+_COMMENT_MARKER = "# Animated weather icons"
 
-# Bilingual notification text (persistent_notification is not translated by the
-# entity translation system, so we localise by hass.config.language here).
 _NOTIFY = {
     "he": {
         "title": "אייקוני מזג אוויר - IMS + Weathercloud",
@@ -155,7 +153,6 @@ def _standalone_current(path: str) -> bool:
 
 
 def _is_ours(line: str) -> bool:
-    """A line we manage: a weather-icon-* var or our own comment marker."""
     s = line.strip()
     return bool(re.match(r"^weather-icon-\S+\s*:", s)) or s.startswith(_COMMENT_MARKER)
 
@@ -177,7 +174,6 @@ def _theme_block(lines: list[str], theme_name: str) -> tuple[int, int] | None:
 
 
 def _collapse_blanks(lines: list[str]) -> list[str]:
-    """Never leave two consecutive blank lines."""
     out: list[str] = []
     for ln in lines:
         if ln.strip() == "" and out and out[-1].strip() == "":
@@ -214,7 +210,7 @@ def _inject_into_theme(path: str, theme_name: str) -> None:
             indent = line[: len(line) - len(line.lstrip())]
             break
 
-    # strip anything we previously added (both vars AND our comment) -> no buildup
+    # strip anything we previously added
     inner = [ln for ln in lines[start + 1 : end] if not _is_ours(ln)]
     new_lines = (
         lines[: start + 1]
@@ -228,7 +224,6 @@ def _inject_into_theme(path: str, theme_name: str) -> None:
 
 
 def _remove_from_theme(path: str, theme_name: str) -> None:
-    """Strip our weather-icon block + comment from an injected theme."""
     if not os.path.isfile(path):
         return
     lines = open(path, encoding="utf-8").read().splitlines()
@@ -238,7 +233,7 @@ def _remove_from_theme(path: str, theme_name: str) -> None:
     start, end = rng
     block = lines[start + 1 : end]
     if not any(_is_ours(ln) for ln in block):
-        return  # nothing of ours here -> no write, no backup
+        return  # nothing
     cleaned = [ln for ln in block if not _is_ours(ln)]
     new_lines = _collapse_blanks(lines[: start + 1] + cleaned + lines[end:])
     shutil.copy2(path, path + ".bak")
@@ -255,7 +250,9 @@ def _remove_standalone(config_dir: str) -> None:
 # --- HA orchestration ----------------------------------------------------
 async def _reload_themes(hass: HomeAssistant) -> None:
     if hass.services.has_service("frontend", "reload_themes"):
-        await hass.services.async_call("frontend", "reload_themes", {}, blocking=True)
+        hass.async_create_task(
+            hass.services.async_call("frontend", "reload_themes", {}, blocking=False)
+        )
 
 
 async def async_discover_themes(hass: HomeAssistant) -> dict[str, str]:
@@ -294,11 +291,6 @@ async def _async_standalone_is_current(hass: HomeAssistant) -> bool:
 
 
 async def async_apply_icons(hass: HomeAssistant, target: str, *, notify: bool = True) -> str:
-    """Inject into `target`, or create the standalone theme. Returns the name.
-
-    If the target already contains exactly our icons, this is a no-op: no write,
-    no backup, no reload, no notification. That keeps every HA restart quiet.
-    """
     await async_check_themes_config(hass)
     config_dir = hass.config.config_dir
 
@@ -311,7 +303,7 @@ async def async_apply_icons(hass: HomeAssistant, target: str, *, notify: bool = 
             await hass.async_add_executor_job(_inject_into_theme, path, target)
             await _reload_themes(hass)
             if notify:
-                _notify(hass, target, injected=True)   # (#4) inform, no profile
+                _notify(hass, target, injected=True)
             return target
 
     if await _async_standalone_is_current(hass):
@@ -324,7 +316,6 @@ async def async_apply_icons(hass: HomeAssistant, target: str, *, notify: bool = 
 
 
 async def async_remove_icons(hass: HomeAssistant, target: str) -> None:
-    """Reverse whatever apply did: strip from an injected theme, or delete ours."""
     config_dir = hass.config.config_dir
     if target and target != NEW_THEME_SENTINEL:
         themes = await async_discover_themes(hass)
