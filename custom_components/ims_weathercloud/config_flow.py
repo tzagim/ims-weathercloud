@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from collections.abc import Mapping
 from typing import Any
 
 import voluptuous as vol
@@ -14,6 +15,9 @@ from homeassistant.config_entries import (
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.selector import (
+    TextSelector,
+    TextSelectorConfig,
+    TextSelectorType,
     NumberSelector,
     NumberSelectorConfig,
     NumberSelectorMode,
@@ -31,6 +35,7 @@ from .const import (
     CONF_CITY,
     CONF_IMS_INTERVAL,
     CONF_LANGUAGE,
+    CONF_STATION_LOCATION,
     CONF_WC_DEVICE_ID,
     CONF_WC_INTERVAL,
     CONF_WC_PASSWORD,
@@ -38,11 +43,14 @@ from .const import (
     DEFAULT_IMS_INTERVAL,
     DEFAULT_LANGUAGE,
     DEFAULT_NAME,
+    DEFAULT_STATION_LOCATION,
     DEFAULT_WC_INTERVAL,
     DOMAIN,
     IMS_CITIES,
     MIN_INTERVAL,
 )
+from .coordinator import create_weathercloud_http
+from .weathercloud_api import WeathercloudApi, WeathercloudAuthError
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -119,14 +127,51 @@ async def _validate_ims(hass: HomeAssistant, city: str, language: str) -> None:
     await hass.async_add_executor_job(_check)
 
 
-async def _validate_weathercloud(hass: HomeAssistant, device_id: str) -> None:
-    def _check() -> None:
-        from weathercloud import WeathercloudClient
+async def _validate_weathercloud(
+    hass: HomeAssistant,
+    device_id: str,
+    username: str | None = None,
+    password: str | None = None,
+) -> None:
+    """Fetch the station once; check the login too when credentials are given.
 
-        with WeathercloudClient() as client:
-            client.get_current_conditions(device_id)
+    Raises WeathercloudAuthError for rejected credentials, anything else means
+    the station could not be read.
+    """
+    api = WeathercloudApi(create_weathercloud_http(), device_id)
+    try:
+        await api.async_get_values()
+    finally:
+        await api.async_close()
 
-    await hass.async_add_executor_job(_check)
+    if username and password:
+        api = WeathercloudApi(
+            create_weathercloud_http(), device_id, username, password
+        )
+        try:
+            await api.async_login()
+        finally:
+            await api.async_close()
+
+
+_PASSWORD_SELECTOR = TextSelector(TextSelectorConfig(type=TextSelectorType.PASSWORD))
+
+
+async def _weathercloud_errors(
+    hass: HomeAssistant,
+    device_id: str,
+    username: str | None,
+    password: str | None,
+) -> dict[str, str]:
+    """Validate a station (and login); return form errors, empty if fine."""
+    try:
+        await _validate_weathercloud(hass, device_id, username, password)
+    except WeathercloudAuthError:
+        return {"base": "weathercloud_auth"}
+    except Exception:  # noqa: BLE001
+        _LOGGER.exception("Weathercloud validation failed")
+        return {"base": "weathercloud_invalid"}
+    return {}
 
 
 class ImsWeathercloudConfigFlow(ConfigFlow, domain=DOMAIN):
@@ -142,6 +187,7 @@ class ImsWeathercloudConfigFlow(ConfigFlow, domain=DOMAIN):
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Step 1: language, Weathercloud, intervals."""
+        errors: dict[str, str] = {}
         if user_input is not None:
             self._data = {
                 CONF_LANGUAGE: user_input[CONF_LANGUAGE],
@@ -156,20 +202,33 @@ class ImsWeathercloudConfigFlow(ConfigFlow, domain=DOMAIN):
                     self._data[CONF_WC_USERNAME] = user_input[CONF_WC_USERNAME]
                 if user_input.get(CONF_WC_PASSWORD):
                     self._data[CONF_WC_PASSWORD] = user_input[CONF_WC_PASSWORD]
-            return await self.async_step_city()
+
+                # Checked here, on the form that has these fields, so a typo
+                # can be fixed without starting over.
+                errors = await _weathercloud_errors(
+                    self.hass,
+                    wc_device,
+                    self._data.get(CONF_WC_USERNAME),
+                    self._data.get(CONF_WC_PASSWORD),
+                )
+
+            if not errors:
+                return await self.async_step_city()
 
         schema = vol.Schema(
             {
                 vol.Required(CONF_LANGUAGE, default=DEFAULT_LANGUAGE): _LANG_SELECTOR,
                 vol.Optional(CONF_WC_DEVICE_ID, default=""): str,
                 vol.Optional(CONF_WC_USERNAME, default=""): str,
-                vol.Optional(CONF_WC_PASSWORD, default=""): str,
+                vol.Optional(CONF_WC_PASSWORD, default=""): _PASSWORD_SELECTOR,
                 vol.Optional(CONF_IMS_INTERVAL, default=DEFAULT_IMS_INTERVAL): _interval_selector(),
                 vol.Optional(CONF_WC_INTERVAL, default=DEFAULT_WC_INTERVAL): _interval_selector(),
                 vol.Optional(CONF_CUSTOM_ICONS, default=False): bool,
             }
         )
-        return self.async_show_form(step_id="user", data_schema=schema)
+        if user_input is not None:
+            schema = self.add_suggested_values_to_schema(schema, user_input)
+        return self.async_show_form(step_id="user", data_schema=schema, errors=errors)
 
     async def async_step_city(
         self, user_input: dict[str, Any] | None = None
@@ -194,13 +253,6 @@ class ImsWeathercloudConfigFlow(ConfigFlow, domain=DOMAIN):
                 _LOGGER.exception("IMS validation failed")
                 errors["base"] = "ims_invalid"
 
-            if not errors and wc_device:
-                try:
-                    await _validate_weathercloud(self.hass, wc_device)
-                except Exception:  # noqa: BLE001
-                    _LOGGER.exception("Weathercloud validation failed")
-                    errors["base"] = "weathercloud_invalid"
-
             if not errors:
                 data = dict(self._data)
                 data[CONF_CITY] = city
@@ -214,6 +266,128 @@ class ImsWeathercloudConfigFlow(ConfigFlow, domain=DOMAIN):
             {vol.Required(CONF_CITY, default=default_city): _city_selector(self._cities)}
         )
         return self.async_show_form(step_id="city", data_schema=schema, errors=errors)
+
+    # --- change station / login after setup -----------------------------
+    async def async_step_reconfigure(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Change the Weathercloud station and login of an existing entry."""
+        entry = self._get_reconfigure_entry()
+        current = entry.data
+        errors: dict[str, str] = {}
+
+        if user_input is not None:
+            device = str(user_input.get(CONF_WC_DEVICE_ID, "")).strip()
+            username = str(user_input.get(CONF_WC_USERNAME, "")).strip()
+            password = user_input.get(CONF_WC_PASSWORD) or ""
+            # An empty password keeps the saved one for the same username.
+            if (
+                username
+                and not password
+                and username == current.get(CONF_WC_USERNAME)
+            ):
+                password = current.get(CONF_WC_PASSWORD, "")
+
+            new_data = {
+                k: v
+                for k, v in current.items()
+                if k not in (CONF_WC_DEVICE_ID, CONF_WC_USERNAME, CONF_WC_PASSWORD)
+            }
+            if device:
+                new_data[CONF_WC_DEVICE_ID] = device
+                if username and password:
+                    new_data[CONF_WC_USERNAME] = username
+                    new_data[CONF_WC_PASSWORD] = password
+
+            new_uid = f"{current[CONF_CITY]}_{device or 'ims_only'}"
+            if new_uid != entry.unique_id and any(
+                e.unique_id == new_uid
+                for e in self._async_current_entries(include_ignore=False)
+            ):
+                errors["base"] = "already_configured"
+
+            if not errors and device:
+                errors.update(
+                    await _weathercloud_errors(
+                        self.hass,
+                        device,
+                        new_data.get(CONF_WC_USERNAME),
+                        new_data.get(CONF_WC_PASSWORD),
+                    )
+                )
+
+            if not errors:
+                return self.async_update_reload_and_abort(
+                    entry, unique_id=new_uid, data=new_data
+                )
+
+        schema = self.add_suggested_values_to_schema(
+            vol.Schema(
+                {
+                    vol.Optional(CONF_WC_DEVICE_ID): str,
+                    vol.Optional(CONF_WC_USERNAME): str,
+                    vol.Optional(CONF_WC_PASSWORD): _PASSWORD_SELECTOR,
+                }
+            ),
+            {
+                CONF_WC_DEVICE_ID: (user_input or current).get(CONF_WC_DEVICE_ID, ""),
+                CONF_WC_USERNAME: (user_input or current).get(CONF_WC_USERNAME, ""),
+            },
+        )
+        return self.async_show_form(
+            step_id="reconfigure", data_schema=schema, errors=errors
+        )
+
+    # --- Weathercloud rejected the saved password ------------------------
+    async def async_step_reauth(
+        self, entry_data: Mapping[str, Any]
+    ) -> ConfigFlowResult:
+        return await self.async_step_reauth_confirm()
+
+    async def async_step_reauth_confirm(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Ask for a new Weathercloud password (or drop the login)."""
+        entry = self._get_reauth_entry()
+        errors: dict[str, str] = {}
+
+        if user_input is not None:
+            username = str(user_input.get(CONF_WC_USERNAME, "")).strip()
+            password = user_input.get(CONF_WC_PASSWORD) or ""
+            new_data = {
+                k: v
+                for k, v in entry.data.items()
+                if k not in (CONF_WC_USERNAME, CONF_WC_PASSWORD)
+            }
+            if username or password:
+                if not (username and password):
+                    errors["base"] = "weathercloud_auth"
+                else:
+                    new_data[CONF_WC_USERNAME] = username
+                    new_data[CONF_WC_PASSWORD] = password
+                    errors.update(
+                        await _weathercloud_errors(
+                            self.hass, entry.data[CONF_WC_DEVICE_ID], username, password
+                        )
+                    )
+            if not errors:
+                return self.async_update_reload_and_abort(entry, data=new_data)
+
+        schema = self.add_suggested_values_to_schema(
+            vol.Schema(
+                {
+                    vol.Optional(CONF_WC_USERNAME): str,
+                    vol.Optional(CONF_WC_PASSWORD): _PASSWORD_SELECTOR,
+                }
+            ),
+            {CONF_WC_USERNAME: (user_input or entry.data).get(CONF_WC_USERNAME, "")},
+        )
+        return self.async_show_form(
+            step_id="reauth_confirm",
+            data_schema=schema,
+            errors=errors,
+            description_placeholders={"station": entry.data.get(CONF_WC_DEVICE_ID, "")},
+        )
 
     @staticmethod
     @callback
@@ -267,6 +441,18 @@ class ImsWeathercloudOptionsFlow(OptionsFlow):
                 ): bool,
             }
         )
+        if data.get(CONF_WC_DEVICE_ID):
+            schema = schema.extend(
+                {
+                    vol.Required(
+                        CONF_STATION_LOCATION,
+                        default=options.get(
+                            CONF_STATION_LOCATION,
+                            data.get(CONF_STATION_LOCATION, DEFAULT_STATION_LOCATION),
+                        ),
+                    ): bool,
+                }
+            )
         return self.async_show_form(step_id="init", data_schema=schema)
 
     async def async_step_icons(

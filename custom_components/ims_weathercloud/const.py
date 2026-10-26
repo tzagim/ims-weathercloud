@@ -161,6 +161,9 @@ IMS_CITIES: dict[str, str] = {
 # --- custom weather icons (theme) ---------------------------------------
 CONF_CUSTOM_ICONS = "custom_icons"
 CONF_ICONS_TARGET = "icons_target"  # theme to inject into, or "__new__"
+# Put the Weathercloud station's position on the weather entity (map card).
+CONF_STATION_LOCATION = "station_location"
+DEFAULT_STATION_LOCATION = True
 THEME_NAME = "weather_animation_icons"
 THEME_FILE = "weather_animation_icons.yaml"
 ICONS_DIRNAME = "weather_icons"

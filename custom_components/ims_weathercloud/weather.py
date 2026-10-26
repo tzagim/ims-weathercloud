@@ -14,7 +14,14 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import DEFAULT_NAME, DOMAIN, IMS_CITIES, ims_site_url
+from .const import (
+    CONF_STATION_LOCATION,
+    DEFAULT_NAME,
+    DEFAULT_STATION_LOCATION,
+    DOMAIN,
+    IMS_CITIES,
+    ims_site_url,
+)
 from .coordinator import ImsWeathercloudCoordinator
 
 
@@ -40,6 +47,12 @@ class ImsWeathercloudWeather(CoordinatorEntity[ImsWeathercloudCoordinator], Weat
 
     def __init__(self, coordinator: ImsWeathercloudCoordinator, entry: ConfigEntry) -> None:
         super().__init__(coordinator)
+        self._show_location = bool(
+            entry.options.get(
+                CONF_STATION_LOCATION,
+                entry.data.get(CONF_STATION_LOCATION, DEFAULT_STATION_LOCATION),
+            )
+        )
         self._attr_unique_id = f"{entry.entry_id}_weather"
         # (#5) device name = IMS locality
         name = (
@@ -103,12 +116,22 @@ class ImsWeathercloudWeather(CoordinatorEntity[ImsWeathercloudCoordinator], Weat
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
         data = self.coordinator.data
-        return {
+        attrs: dict[str, Any] = {
             "current_source": data.source,
             "weathercloud_online": data.weathercloud_online,
             "locality": data.location_name,
             "station_url": data.station_url,
         }
+        station = data.station
+        if station is not None:
+            attrs["station_name"] = station.name
+            attrs["station_city"] = station.city
+            attrs["station_altitude"] = station.altitude
+            # latitude/longitude put the station on map cards.
+            if self._show_location and station.latitude is not None:
+                attrs["latitude"] = station.latitude
+                attrs["longitude"] = station.longitude
+        return attrs
 
     async def async_forecast_daily(self) -> list[Forecast] | None:
         return [Forecast(**d) for d in self.coordinator.data.forecast_daily]  # type: ignore[misc]

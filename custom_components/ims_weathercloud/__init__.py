@@ -10,6 +10,7 @@ from .const import (
     CONF_ICONS_TARGET,
     CONF_IMS_INTERVAL,
     CONF_LANGUAGE,
+    CONF_STATION_LOCATION,
     CONF_WC_DEVICE_ID,
     CONF_WC_INTERVAL,
     CONF_WC_PASSWORD,
@@ -33,6 +34,7 @@ _RELOAD_KEYS = (
     CONF_WC_PASSWORD,
     CONF_IMS_INTERVAL,
     CONF_WC_INTERVAL,
+    CONF_STATION_LOCATION,
 )
 
 
@@ -62,6 +64,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     setup_dependency_logging(entry.entry_id)
 
     coordinator = ImsWeathercloudCoordinator(hass, entry)
+    # Registered before the first refresh so the HTTP session is also closed
+    # when setup fails.
+    entry.async_on_unload(coordinator.async_close_weathercloud)
     try:
         await coordinator.async_config_entry_first_refresh()
     except Exception:
