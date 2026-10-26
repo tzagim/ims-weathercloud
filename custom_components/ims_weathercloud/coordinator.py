@@ -5,10 +5,17 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
+import httpx
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import dt as dt_util
+from homeassistant.util.ssl import client_context
+
+try:  # Home Assistant 2026.4+: separate cached SSL contexts per ALPN setting
+    from homeassistant.util.ssl import SSL_ALPN_HTTP11
+except ImportError:  # older releases: one shared cached context
+    SSL_ALPN_HTTP11 = None
 
 from .const import (
     CONF_CITY,
@@ -27,12 +34,28 @@ from .const import (
     ims_condition,
     ims_wind_bearing,
 )
+from .weathercloud_api import StationInfo, WeathercloudApi, WeathercloudApiError
 
 _LOGGER = logging.getLogger(__name__)
+
+
+def create_weathercloud_http() -> httpx.AsyncClient:
+    """A private httpx client for one Weathercloud session.
+
+    Not Home Assistant's create_async_httpx_client(): clients from that helper
+    can't be closed by an integration (aclose() only reports a warning), so a
+    reload would leave the old session open until shutdown. The SSL context is
+    Home Assistant's cached one, so creating the client does no blocking I/O.
+    """
+    if SSL_ALPN_HTTP11 is None:
+        return httpx.AsyncClient(verify=client_context())
+    return httpx.AsyncClient(verify=client_context(alpn_protocols=SSL_ALPN_HTTP11))
+
 
 # Grace so a scheduler tick that fires a hair early still counts as "due"
 # (prevents a 10-min source from effectively refreshing every 20 min).
 _DUE_GRACE = timedelta(seconds=30)
+_STATION_INFO_RETRY = timedelta(hours=1)
 
 
 def _safe(obj: Any, *names: str) -> Any:
@@ -77,6 +100,7 @@ class MergedData:
     ims_fetched_at: datetime | None = None     # when HA last polled IMS
     wc_fetched_at: datetime | None = None      # when HA last polled Weathercloud
     station_url: str | None = None
+    station: StationInfo | None = None   # name/city/altitude/position, once per load
 
 
 class ImsWeathercloudCoordinator(DataUpdateCoordinator[MergedData]):
@@ -114,6 +138,61 @@ class ImsWeathercloudCoordinator(DataUpdateCoordinator[MergedData]):
         self._ims_ok = True      # for throttled failure logging
         self._wc_ok = True
 
+        # One long-lived HTTP session per entry: the login (if any) is kept
+        # between polls instead of being repeated on every refresh.
+        self._wc_api: WeathercloudApi | None = None
+        self._reauth_started = False
+        self._station_info: StationInfo | None = None
+        self._station_info_tried: datetime | None = None
+        if self._wc_device_id:
+            self._wc_api = WeathercloudApi(
+                create_weathercloud_http(),
+                self._wc_device_id,
+                self._wc_username,
+                self._wc_password,
+            )
+
+    @property
+    def weathercloud_api(self) -> WeathercloudApi | None:
+        return self._wc_api
+
+    def _check_weathercloud_auth(self) -> None:
+        """Ask the user for a new password once Weathercloud rejects it.
+
+        Public readings keep flowing meanwhile, so this is a reauth prompt,
+        not a setup failure.
+        """
+        if self._wc_api is None or not self._wc_api.auth_rejected:
+            return
+        if self._reauth_started:
+            return
+        self._reauth_started = True
+        _LOGGER.warning(
+            "Weathercloud rejected the saved login; indoor sensors are paused "
+            "until the password is updated"
+        )
+        self.entry.async_start_reauth(self.hass)
+
+    async def _async_ensure_station_info(self, now: datetime) -> None:
+        """Fetch the station's name and position once; retry hourly on failure.
+
+        This never fails the update: the readings matter, the position is extra.
+        """
+        if self._wc_api is None or self._station_info is not None:
+            return
+        if self._station_info_tried and now - self._station_info_tried < _STATION_INFO_RETRY:
+            return
+        self._station_info_tried = now
+        try:
+            self._station_info = await self._wc_api.async_get_station_info()
+        except WeathercloudApiError as err:
+            _LOGGER.debug("Weathercloud station details not available yet: %s", err)
+
+    async def async_close_weathercloud(self) -> None:
+        """Release the Weathercloud HTTP session (called on unload)."""
+        if self._wc_api is not None:
+            await self._wc_api.async_close()
+
     async def async_force_refresh(self) -> None:
         """Force both sources to refetch now (bypasses the per-source cache)."""
         self._force_all = True
@@ -125,22 +204,6 @@ class ImsWeathercloudCoordinator(DataUpdateCoordinator[MergedData]):
 
         weather = WeatherIL(str(self._city), self.language)
         return weather.get_current_analysis(), weather.get_forecast()
-
-    def _fetch_weathercloud(self) -> Any | None:
-        if not self._wc_device_id:
-            return None
-        from weathercloud import WeathercloudClient, WeathercloudError
-
-        kwargs: dict[str, Any] = {}
-        if self._wc_username and self._wc_password:
-            kwargs["username"] = self._wc_username
-            kwargs["password"] = self._wc_password
-        try:
-            with WeathercloudClient(**kwargs) as client:
-                return client.get_current_conditions(self._wc_device_id)
-        except WeathercloudError as err:
-            _LOGGER.warning("Weathercloud fetch failed, falling back to IMS: %s", err)
-            return None
 
     # --- normalise IMS current ------------------------------------------
     def _build_ims_current(self, w: Any) -> dict[str, Any]:
@@ -163,27 +226,28 @@ class ImsWeathercloudCoordinator(DataUpdateCoordinator[MergedData]):
     def _apply_weathercloud(
         self, current: dict[str, Any], source: dict[str, str], wc: Any
     ) -> datetime | None:
-        wind_ms = _to_float(getattr(wc, "wind_speed", None))
-        wind_avg_ms = _to_float(getattr(wc, "wind_speed_avg", None))
-        gust_ms = _to_float(getattr(wc, "wind_gust", None))
+        # Field names are Weathercloud's raw API keys (weathercloud>=1.0).
+        wind_ms = _to_float(getattr(wc, "wspd", None))
+        wind_avg_ms = _to_float(getattr(wc, "wspdavg", None))
+        gust_ms = _to_float(getattr(wc, "wspdhi", None))
 
         overrides: dict[str, Any] = {
-            "temperature": _to_float(getattr(wc, "temperature", None)),
-            "apparent_temperature": _to_float(getattr(wc, "heat_index", None)),
-            "humidity": _to_int(getattr(wc, "humidity", None)),
+            "temperature": _to_float(getattr(wc, "temp", None)),
+            "apparent_temperature": _to_float(getattr(wc, "heat", None)),
+            "humidity": _to_int(getattr(wc, "hum", None)),
             "wind_speed": None if wind_ms is None else round(wind_ms * MS_TO_KMH, 1),
             "wind_speed_avg": None if wind_avg_ms is None else round(wind_avg_ms * MS_TO_KMH, 1),
             "wind_gust": None if gust_ms is None else round(gust_ms * MS_TO_KMH, 1),
-            "wind_bearing": _to_int(getattr(wc, "wind_direction", None)),
-            "wind_bearing_avg": _to_int(getattr(wc, "wind_direction_avg", None)),
-            "pressure": _to_float(getattr(wc, "pressure", None)),
+            "wind_bearing": _to_int(getattr(wc, "wdir", None)),
+            "wind_bearing_avg": _to_int(getattr(wc, "wdiravg", None)),
+            "pressure": _to_float(getattr(wc, "bar", None)),
             "rain": _to_float(getattr(wc, "rain", None)),
-            "rain_rate": _to_float(getattr(wc, "rain_rate", None)),
-            "uv_index": _to_int(getattr(wc, "uv_index", None)),
-            "dew_point": _to_float(getattr(wc, "dew_point", None)),
-            "solar_radiation": _to_float(getattr(wc, "solar_radiation", None)),
-            "inside_temperature": _to_float(getattr(wc, "inside_temperature", None)),
-            "inside_humidity": _to_int(getattr(wc, "inside_humidity", None)),
+            "rain_rate": _to_float(getattr(wc, "rainrate", None)),
+            "uv_index": _to_int(getattr(wc, "uvi", None)),
+            "dew_point": _to_float(getattr(wc, "dew", None)),
+            "solar_radiation": _to_float(getattr(wc, "solarrad", None)),
+            "inside_temperature": _to_float(getattr(wc, "tempin", None)),
+            "inside_humidity": _to_int(getattr(wc, "humin", None)),
         }
         for key, value in overrides.items():
             if value is not None:
@@ -265,7 +329,7 @@ class ImsWeathercloudCoordinator(DataUpdateCoordinator[MergedData]):
         ims_current, ims_forecast = self._ims_cache
 
         wc = None
-        if self._wc_device_id:
+        if self._wc_api is not None:
             wc_due = (
                 force
                 or self._last_wc_fetch is None
@@ -273,13 +337,22 @@ class ImsWeathercloudCoordinator(DataUpdateCoordinator[MergedData]):
             )
             if wc_due:
                 try:
-                    self._wc_cache = await self.hass.async_add_executor_job(
-                        self._fetch_weathercloud
-                    )
+                    self._wc_cache = await self._wc_api.async_get_values()
+                    self._check_weathercloud_auth()
                     self._last_wc_fetch = now
                     if not self._wc_ok:
                         _LOGGER.info("Weathercloud connection restored")
                         self._wc_ok = True
+                except WeathercloudApiError as err:
+                    # Same as weathercloud 0.1.x: an API error means "no station
+                    # data this round", so IMS values are shown instead.
+                    self._wc_cache = None
+                    self._last_wc_fetch = now
+                    if self._wc_ok:
+                        _LOGGER.warning(
+                            "Weathercloud fetch failed, falling back to IMS: %s", err
+                        )
+                        self._wc_ok = False
                 except Exception as err:  # noqa: BLE001
                     if self._wc_ok:
                         _LOGGER.warning(
@@ -288,6 +361,7 @@ class ImsWeathercloudCoordinator(DataUpdateCoordinator[MergedData]):
                         )
                         self._wc_ok = False
             wc = self._wc_cache
+            await self._async_ensure_station_info(now)
 
         current = self._build_ims_current(ims_current)
         source = {key: SOURCE_IMS for key in current}
@@ -324,4 +398,5 @@ class ImsWeathercloudCoordinator(DataUpdateCoordinator[MergedData]):
             ims_fetched_at=self._last_ims_fetch,
             wc_fetched_at=self._last_wc_fetch,
             station_url=station_url,
+            station=self._station_info,
         )

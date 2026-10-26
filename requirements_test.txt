@@ -1,0 +1,3 @@
+pytest-homeassistant-custom-component
+weathercloud>=1.0.0,<2
+weatheril~=0.41.0

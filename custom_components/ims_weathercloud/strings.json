@@ -20,14 +20,36 @@
         "data": {
           "city": "Locality"
         }
+      },
+      "reconfigure": {
+        "title": "Weathercloud station",
+        "description": "Change the Weathercloud station or login. Leave the station empty to use IMS only. Leave the password empty to keep the saved one.",
+        "data": {
+          "wc_device_id": "Weathercloud station id - digits only, without d",
+          "wc_username": "Weathercloud username (optional, for inside sensors)",
+          "wc_password": "Weathercloud password"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Weathercloud login",
+        "description": "Weathercloud rejected the saved login for station {station}. Enter the current username and password, or leave both empty to stop using the login (public station data keeps working).",
+        "data": {
+          "wc_username": "Weathercloud username",
+          "wc_password": "Weathercloud password"
+        }
       }
     },
     "error": {
       "ims_invalid": "Could not fetch data from IMS for that locality.",
-      "weathercloud_invalid": "Could not fetch data from that Weathercloud station id."
+      "weathercloud_invalid": "Could not fetch data from that Weathercloud station id.",
+      "weathercloud_auth": "Weathercloud rejected the username or password. Fix them, or leave both empty to use only the public station data.",
+      "already_configured": "Another entry already uses this locality and station.",
+      "ims_cities_unavailable": "Could not load the locality list from IMS. Check the internet connection and submit again."
     },
     "abort": {
-      "already_configured": "This location is already configured."
+      "already_configured": "This location is already configured.",
+      "reconfigure_successful": "The Weathercloud settings were updated.",
+      "reauth_successful": "The Weathercloud login was updated."
     }
   },
   "options": {
@@ -38,7 +60,8 @@
           "language": "Language",
           "ims_interval": "IMS refresh interval (minutes)",
           "wc_interval": "Weathercloud refresh interval (minutes)",
-          "custom_icons": "Use custom weather icons"
+          "custom_icons": "Use custom weather icons",
+          "station_location": "Show the Weathercloud station on the map (adds its position to the weather entity)"
         }
       },
       "icons": {

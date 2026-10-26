@@ -20,14 +20,36 @@
         "data": {
           "city": "יישוב"
         }
+      },
+      "reconfigure": {
+        "title": "תחנת Weathercloud",
+        "description": "שינוי תחנת ה-Weathercloud או פרטי ההתחברות. אפשר להשאיר את התחנה ריקה כדי להשתמש רק ב-IMS, ואת הסיסמה ריקה כדי לשמור את הסיסמה הקיימת.",
+        "data": {
+          "wc_device_id": "מזהה תחנת Weathercloud - ספרות בלבד, בלי d",
+          "wc_username": "שם משתמש Weathercloud (אופציונלי, לחיישני פנים)",
+          "wc_password": "סיסמת Weathercloud"
+        }
+      },
+      "reauth_confirm": {
+        "title": "התחברות ל-Weathercloud",
+        "description": "Weathercloud דחה את פרטי ההתחברות השמורים של תחנה {station}. יש להזין את שם המשתמש והסיסמה הנוכחיים, או להשאיר את שניהם ריקים כדי להפסיק להשתמש בהתחברות (נתוני התחנה הציבוריים ימשיכו לעבוד).",
+        "data": {
+          "wc_username": "שם משתמש Weathercloud",
+          "wc_password": "סיסמת Weathercloud"
+        }
       }
     },
     "error": {
       "ims_invalid": "לא ניתן היה לשלוף נתונים מ-IMS עבור היישוב הזה.",
-      "weathercloud_invalid": "לא ניתן היה לשלוף נתונים ממזהה תחנת ה-Weathercloud הזה."
+      "weathercloud_invalid": "לא ניתן היה לשלוף נתונים ממזהה תחנת ה-Weathercloud הזה.",
+      "weathercloud_auth": "Weathercloud דחה את שם המשתמש או הסיסמה. יש לתקן אותם, או להשאיר את שניהם ריקים כדי להשתמש רק בנתוני התחנה הציבוריים.",
+      "already_configured": "רשומה אחרת כבר משתמשת ביישוב ובתחנה האלה.",
+      "ims_cities_unavailable": "לא ניתן היה לטעון את רשימת היישובים מ-IMS. יש לבדוק את החיבור לאינטרנט ולשלוח שוב."
     },
     "abort": {
-      "already_configured": "מיקום זה כבר מוגדר."
+      "already_configured": "מיקום זה כבר מוגדר.",
+      "reconfigure_successful": "הגדרות ה-Weathercloud עודכנו.",
+      "reauth_successful": "פרטי ההתחברות ל-Weathercloud עודכנו."
     }
   },
   "options": {
@@ -38,7 +60,8 @@
           "language": "שפה",
           "ims_interval": "תדירות עדכון IMS (דקות)",
           "wc_interval": "תדירות עדכון Weathercloud (דקות)",
-          "custom_icons": "שימוש באייקוני מזג אוויר מותאמים"
+          "custom_icons": "שימוש באייקוני מזג אוויר מותאמים",
+          "station_location": "הצגת תחנת ה-Weathercloud על המפה (מוסיף את מיקומה לישות מזג האוויר)"
         }
       },
       "icons": {
