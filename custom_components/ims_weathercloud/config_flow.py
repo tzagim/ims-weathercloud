@@ -46,7 +46,6 @@ from .const import (
     DEFAULT_STATION_LOCATION,
     DEFAULT_WC_INTERVAL,
     DOMAIN,
-    IMS_CITIES,
     MIN_INTERVAL,
 )
 from .coordinator import create_weathercloud_http
@@ -83,7 +82,8 @@ def _norm_lang(language: str | None) -> str:
 async def _fetch_localized_cities(hass: HomeAssistant, language: str) -> dict[str, str]:
     """Fetch {city_id: localized_name} from IMS in the chosen language.
 
-    Falls back to the bundled English catalogue if the endpoint is unreachable.
+    IMS is the only source of the list. Returns an empty dict when it can't
+    be loaded; the flow then asks the user to try again.
     """
     lang = _norm_lang(language)
     session = async_get_clientsession(hass)
@@ -91,18 +91,21 @@ async def _fetch_localized_cities(hass: HomeAssistant, language: str) -> dict[st
         async with session.get(IMS_LOCATIONS_URL.format(lang=lang)) as resp:
             if resp.status != 200:
                 _LOGGER.warning("IMS locations_info returned %s", resp.status)
-                return dict(IMS_CITIES)
+                return {}
             data = await resp.json(content_type=None)
     except Exception as err:  # noqa: BLE001
         _LOGGER.warning("Could not fetch IMS localized cities: %s", err)
-        return dict(IMS_CITIES)
+        return {}
 
-    cities = (data or {}).get("data") or {}
+    cities = (data or {}).get("data") if isinstance(data, dict) else None
+    if not isinstance(cities, dict):
+        _LOGGER.warning("IMS locations_info had no locality list")
+        return {}
     result: dict[str, str] = {}
     for cid, city in cities.items():
         name = city.get("name") if isinstance(city, dict) else None
         result[str(cid)] = name or str(cid)
-    return result or dict(IMS_CITIES)
+    return result
 
 
 def _city_selector(cities: dict[str, str]) -> SelectSelector:
@@ -182,6 +185,7 @@ class ImsWeathercloudConfigFlow(ConfigFlow, domain=DOMAIN):
     def __init__(self) -> None:
         self._data: dict[str, Any] = {}
         self._cities: dict[str, str] = {}
+        self._cities_language: str | None = None
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
@@ -213,6 +217,18 @@ class ImsWeathercloudConfigFlow(ConfigFlow, domain=DOMAIN):
                 )
 
             if not errors:
+                # The locality list comes only from IMS, in the chosen language.
+                if self._cities_language != self._data[CONF_LANGUAGE]:
+                    self._cities = await _fetch_localized_cities(
+                        self.hass, self._data[CONF_LANGUAGE]
+                    )
+                    self._cities_language = (
+                        self._data[CONF_LANGUAGE] if self._cities else None
+                    )
+                if not self._cities:
+                    errors["base"] = "ims_cities_unavailable"
+
+            if not errors:
                 return await self.async_step_city()
 
         schema = vol.Schema(
@@ -237,9 +253,6 @@ class ImsWeathercloudConfigFlow(ConfigFlow, domain=DOMAIN):
         errors: dict[str, str] = {}
         language = self._data[CONF_LANGUAGE]
 
-        if not self._cities:
-            self._cities = await _fetch_localized_cities(self.hass, language)
-
         if user_input is not None:
             city = str(user_input[CONF_CITY]).strip()
             wc_device = self._data.get(CONF_WC_DEVICE_ID, "")
@@ -261,7 +274,7 @@ class ImsWeathercloudConfigFlow(ConfigFlow, domain=DOMAIN):
                     title=f"{DEFAULT_NAME} - {name}", data=data
                 )
 
-        default_city = next(iter(self._cities), "1")
+        default_city = next(iter(self._cities))
         schema = vol.Schema(
             {vol.Required(CONF_CITY, default=default_city): _city_selector(self._cities)}
         )

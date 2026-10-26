@@ -43,7 +43,8 @@
       "ims_invalid": "Could not fetch data from IMS for that locality.",
       "weathercloud_invalid": "Could not fetch data from that Weathercloud station id.",
       "weathercloud_auth": "Weathercloud rejected the username or password. Fix them, or leave both empty to use only the public station data.",
-      "already_configured": "Another entry already uses this locality and station."
+      "already_configured": "Another entry already uses this locality and station.",
+      "ims_cities_unavailable": "Could not load the locality list from IMS. Check the internet connection and submit again."
     },
     "abort": {
       "already_configured": "This location is already configured.",

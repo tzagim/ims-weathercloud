@@ -8,7 +8,7 @@ from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import DEFAULT_NAME, DOMAIN, IMS_CITIES, ims_site_url
+from .const import DOMAIN, ims_site_url, locality_name
 from .coordinator import ImsWeathercloudCoordinator
 
 
@@ -30,10 +30,7 @@ class RefreshButton(CoordinatorEntity[ImsWeathercloudCoordinator], ButtonEntity)
         super().__init__(coordinator)
         self._attr_unique_id = f"{entry.entry_id}_refresh"
         self._attr_translation_key = "refresh"
-        name = (
-            getattr(coordinator.data, "location_name", None)
-            or IMS_CITIES.get(str(entry.data.get("city")), DEFAULT_NAME)
-        )
+        name = locality_name(entry, coordinator.data)
         url = getattr(coordinator.data, "station_url", None) or ims_site_url(
             entry.data.get("language")
         )

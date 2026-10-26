@@ -27,7 +27,7 @@ from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import DEFAULT_NAME, DOMAIN, IMS_CITIES, ims_site_url
+from .const import DOMAIN, ims_site_url, locality_name
 from .coordinator import ImsWeathercloudCoordinator
 
 
@@ -150,10 +150,7 @@ SENSORS: tuple[MergedSensorDescription, ...] = (
 
 
 def _device_info(entry: ConfigEntry, coordinator: ImsWeathercloudCoordinator) -> dict[str, Any]:
-    name = (
-        getattr(coordinator.data, "location_name", None)
-        or IMS_CITIES.get(str(entry.data.get("city")), DEFAULT_NAME)
-    )
+    name = locality_name(entry, coordinator.data)
     url = getattr(coordinator.data, "station_url", None) or ims_site_url(
         entry.data.get("language")
     )
