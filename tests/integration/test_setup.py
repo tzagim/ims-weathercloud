@@ -487,7 +487,9 @@ async def test_language_changed_in_settings_is_used(hass: HomeAssistant) -> None
 
     coordinator = hass.data[DOMAIN][entry.entry_id]
     assert coordinator.language == "he"
-    device = dr.async_get(hass).async_get_device(identifiers={(DOMAIN, entry.entry_id)})
+    # Look the device up by config entry: async_get_device(identifiers=...) is
+    # deprecated and fails in tests on newer Home Assistant.
+    (device,) = dr.async_entries_for_config_entry(dr.async_get(hass), entry.entry_id)
     assert device.configuration_url == "https://ims.gov.il/he"
 
 
