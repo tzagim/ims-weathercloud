@@ -298,6 +298,86 @@ async def test_reconfigure_duplicate_is_refused(hass: HomeAssistant) -> None:
     assert result["errors"] == {"base": "already_configured"}
 
 
+async def test_reconfigure_change_locality(hass: HomeAssistant) -> None:
+    entry = _entry(**{CONF_WC_DEVICE_ID: DEVICE})
+    await _setup(hass, entry)
+    registry = er.async_get(hass)
+    before = {e.entity_id for e in er.async_entries_for_config_entry(registry, entry.entry_id)}
+
+    with patch(
+        f"{PKG}.config_flow._fetch_localized_cities",
+        return_value={"2": "Tel Aviv", "6": "Jerusalem"},
+    ):
+        result = await _reconfigure(
+            hass, entry, {CONF_CITY: "6", CONF_WC_DEVICE_ID: DEVICE}
+        )
+    assert result["reason"] == "reconfigure_successful"
+    assert entry.data[CONF_CITY] == "6"
+    assert entry.data[CONF_WC_DEVICE_ID] == DEVICE
+    assert entry.unique_id == f"6_{DEVICE}"
+    assert entry.title.endswith("Jerusalem")
+    assert entry.state is ConfigEntryState.LOADED
+    after = {e.entity_id for e in er.async_entries_for_config_entry(registry, entry.entry_id)}
+    assert after == before  # automations and cards keep working
+
+
+async def test_reconfigure_bad_locality_is_refused(hass: HomeAssistant) -> None:
+    entry = _entry()
+    await _setup(hass, entry)
+    with (
+        patch(
+            f"{PKG}.config_flow._fetch_localized_cities",
+            return_value={"2": "Tel Aviv", "6": "Jerusalem"},
+        ),
+        patch(f"{PKG}.config_flow._validate_ims", side_effect=RuntimeError),
+    ):
+        result = await _reconfigure(hass, entry, {CONF_CITY: "6"})
+    assert result["errors"] == {"base": "ims_invalid"}
+    assert entry.data[CONF_CITY] == "2"
+
+
+async def test_reconfigure_same_locality_skips_ims_check(hass: HomeAssistant) -> None:
+    entry = _entry()
+    await _setup(hass, entry)
+    title = entry.title
+    with patch(f"{PKG}.config_flow._validate_ims", side_effect=RuntimeError):
+        result = await _reconfigure(hass, entry, {CONF_CITY: "2"})
+    assert result["reason"] == "reconfigure_successful"
+    assert entry.title == title
+
+
+async def test_reconfigure_without_locality_list(hass: HomeAssistant) -> None:
+    """IMS list down: the form still opens and Weathercloud can be changed."""
+    entry = _entry()
+    await _setup(hass, entry)
+    with patch(f"{PKG}.config_flow._fetch_localized_cities", return_value={}):
+        result = await entry.start_reconfigure_flow(hass)
+        assert result["errors"] == {"base": "ims_cities_unavailable"}
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"], {CONF_WC_DEVICE_ID: DEVICE}
+        )
+        await hass.async_block_till_done()
+    assert result["reason"] == "reconfigure_successful"
+    assert entry.data[CONF_CITY] == "2"
+    assert entry.unique_id == f"2_{DEVICE}"
+
+
+async def test_reconfigure_duplicate_locality_is_refused(hass: HomeAssistant) -> None:
+    other = MockConfigEntry(
+        domain=DOMAIN, data={CONF_CITY: "6", CONF_LANGUAGE: "en"}, unique_id="6_ims_only",
+    )
+    other.add_to_hass(hass)
+    entry = _entry()
+    await _setup(hass, entry)
+    with patch(
+        f"{PKG}.config_flow._fetch_localized_cities",
+        return_value={"2": "Tel Aviv", "6": "Jerusalem"},
+    ):
+        result = await _reconfigure(hass, entry, {CONF_CITY: "6"})
+    assert result["errors"] == {"base": "already_configured"}
+    assert entry.data[CONF_CITY] == "2"
+
+
 # --- diagnostics ----------------------------------------------------------
 @pytest.mark.skipif(get_diagnostics_for_config_entry is None, reason="old test harness")
 async def test_diagnostics_redacts_login(hass: HomeAssistant, hass_client) -> None:

@@ -22,9 +22,10 @@
         }
       },
       "reconfigure": {
-        "title": "Weathercloud station",
-        "description": "Change the Weathercloud station or login. Leave the station empty to use IMS only. Leave the password empty to keep the saved one.",
+        "title": "Change locality or station",
+        "description": "Change the IMS locality, the Weathercloud station or its login. Leave the station empty to use IMS only, and the password empty to keep the saved one.",
         "data": {
+          "city": "Locality",
           "wc_device_id": "Weathercloud station id - digits only, without d",
           "wc_username": "Weathercloud username (optional, for inside sensors)",
           "wc_password": "Weathercloud password"
@@ -48,7 +49,7 @@
     },
     "abort": {
       "already_configured": "This location is already configured.",
-      "reconfigure_successful": "The Weathercloud settings were updated.",
+      "reconfigure_successful": "The settings were updated.",
       "reauth_successful": "The Weathercloud login was updated."
     }
   },
