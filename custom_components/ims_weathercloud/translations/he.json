@@ -154,5 +154,8 @@
       "title": "ערכת אייקוני מזג האוויר לא פעילה",
       "description": "ה-configuration.yaml לא טוען themes, ולכן ערכת האייקונים לא תופיע. יש להוסיף אל configuration.yaml ולהפעיל את המערכת מחדש:\n\nfrontend:\n  themes: !include_dir_merge_named themes/"
     }
+  },
+  "common": {
+    "attribution": "הנתונים מסופקים על ידי השירות המטאורולוגי / Weathercloud"
   }
 }

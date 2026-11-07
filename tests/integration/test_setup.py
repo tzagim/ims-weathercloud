@@ -15,7 +15,7 @@ import pytest
 from homeassistant.config_entries import SOURCE_REAUTH, ConfigEntryState
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
-from homeassistant.helpers import entity_registry as er
+from homeassistant.helpers import device_registry as dr, entity_registry as er
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 try:  # helper only shipped by newer pytest-homeassistant-custom-component
@@ -444,6 +444,51 @@ async def test_ims_only_has_no_station_attributes(hass: HomeAssistant) -> None:
     await _setup(hass, entry)
     attrs = _weather_state(hass, entry).attributes
     assert "station_name" not in attrs and "latitude" not in attrs
+
+
+@pytest.mark.parametrize(
+    ("language", "expected"),
+    [
+        ("en", "Data provided by IMS / Weathercloud"),
+        ("he", "הנתונים מסופקים על ידי השירות המטאורולוגי / Weathercloud"),
+    ],
+)
+async def test_attribution_follows_language(
+    hass: HomeAssistant, language: str, expected: str
+) -> None:
+    entry = MockConfigEntry(
+        domain=DOMAIN, data={CONF_CITY: "2", CONF_LANGUAGE: language}, unique_id="2_test"
+    )
+    await _setup(hass, entry)
+    assert _weather_state(hass, entry).attributes["attribution"] == expected
+
+
+async def test_attribution_uses_language_from_options(hass: HomeAssistant) -> None:
+    entry = MockConfigEntry(
+        domain=DOMAIN, data={CONF_CITY: "2", CONF_LANGUAGE: "en"},
+        options={CONF_LANGUAGE: "he"}, unique_id="2_test",
+    )
+    await _setup(hass, entry)
+    assert _weather_state(hass, entry).attributes["attribution"].startswith("הנתונים")
+
+
+async def test_language_changed_in_settings_is_used(hass: HomeAssistant) -> None:
+    """IMS is queried, and its site linked, in the language set in Settings."""
+    entry = _entry()  # set up in English
+    coordinator = await _setup(hass, entry)
+    assert coordinator.language == "en"
+
+    form = await hass.config_entries.options.async_init(entry.entry_id)
+    await hass.config_entries.options.async_configure(
+        form["flow_id"],
+        {CONF_LANGUAGE: "he", "ims_interval": 10, "wc_interval": 10, "custom_icons": False},
+    )
+    await hass.async_block_till_done()
+
+    coordinator = hass.data[DOMAIN][entry.entry_id]
+    assert coordinator.language == "he"
+    device = dr.async_get(hass).async_get_device(identifiers={(DOMAIN, entry.entry_id)})
+    assert device.configuration_url == "https://ims.gov.il/he"
 
 
 async def test_options_show_station_toggle_only_with_station(hass: HomeAssistant) -> None:

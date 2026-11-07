@@ -154,5 +154,8 @@
       "title": "Custom weather icons theme not active",
       "description": "Your configuration.yaml does not load themes, so the custom weather-icon theme cannot appear. Add this to configuration.yaml and restart:\n\nfrontend:\n  themes: !include_dir_merge_named themes/"
     }
+  },
+  "common": {
+    "attribution": "Data provided by IMS / Weathercloud"
   }
 }
