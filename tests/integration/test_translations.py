@@ -24,7 +24,7 @@ CONFIG_FIELDS = {
     "user": ["language", "wc_device_id", "wc_username", "wc_password",
              "ims_interval", "wc_interval", "custom_icons"],
     "city": ["city"],
-    "reconfigure": ["wc_device_id", "wc_username", "wc_password"],
+    "reconfigure": ["city", "wc_device_id", "wc_username", "wc_password"],
     "reauth_confirm": ["wc_username", "wc_password"],
 }
 OPTIONS_FIELDS = {

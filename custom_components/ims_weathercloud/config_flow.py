@@ -47,6 +47,7 @@ from .const import (
     DEFAULT_WC_INTERVAL,
     DOMAIN,
     MIN_INTERVAL,
+    locality_name,
 )
 from .coordinator import create_weathercloud_http
 from .weathercloud_api import WeathercloudApi, WeathercloudAuthError
@@ -280,16 +281,34 @@ class ImsWeathercloudConfigFlow(ConfigFlow, domain=DOMAIN):
         )
         return self.async_show_form(step_id="city", data_schema=schema, errors=errors)
 
-    # --- change station / login after setup -----------------------------
+    # --- change locality / station / login after setup -------------------
     async def async_step_reconfigure(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
-        """Change the Weathercloud station and login of an existing entry."""
+        """Change the IMS locality, Weathercloud station and login of an entry."""
         entry = self._get_reconfigure_entry()
         current = entry.data
         errors: dict[str, str] = {}
+        current_city = str(current[CONF_CITY])
+        language = entry.options.get(
+            CONF_LANGUAGE, current.get(CONF_LANGUAGE, DEFAULT_LANGUAGE)
+        )
+
+        # The locality list comes only from IMS, in the entry's language.
+        if self._cities_language != language:
+            self._cities = await _fetch_localized_cities(self.hass, language)
+            self._cities_language = language if self._cities else None
+        cities = dict(self._cities)
+        if not cities:
+            # Keep the form usable for the Weathercloud fields: offer only the
+            # current locality and say why the list is missing.
+            errors["base"] = "ims_cities_unavailable"
+        if current_city not in cities:
+            cities[current_city] = locality_name(entry, None)
 
         if user_input is not None:
+            errors = {}
+            city = str(user_input.get(CONF_CITY) or current_city).strip()
             device = str(user_input.get(CONF_WC_DEVICE_ID, "")).strip()
             username = str(user_input.get(CONF_WC_USERNAME, "")).strip()
             password = user_input.get(CONF_WC_PASSWORD) or ""
@@ -306,18 +325,28 @@ class ImsWeathercloudConfigFlow(ConfigFlow, domain=DOMAIN):
                 for k, v in current.items()
                 if k not in (CONF_WC_DEVICE_ID, CONF_WC_USERNAME, CONF_WC_PASSWORD)
             }
+            new_data[CONF_CITY] = city
             if device:
                 new_data[CONF_WC_DEVICE_ID] = device
                 if username and password:
                     new_data[CONF_WC_USERNAME] = username
                     new_data[CONF_WC_PASSWORD] = password
 
-            new_uid = f"{current[CONF_CITY]}_{device or 'ims_only'}"
+            new_uid = f"{city}_{device or 'ims_only'}"
             if new_uid != entry.unique_id and any(
                 e.unique_id == new_uid
                 for e in self._async_current_entries(include_ignore=False)
+                if e.entry_id != entry.entry_id
             ):
                 errors["base"] = "already_configured"
+
+            city_changed = city != current_city
+            if not errors and city_changed:
+                try:
+                    await _validate_ims(self.hass, city, language)
+                except Exception:  # noqa: BLE001
+                    _LOGGER.exception("IMS validation failed")
+                    errors["base"] = "ims_invalid"
 
             if not errors and device:
                 errors.update(
@@ -330,19 +359,23 @@ class ImsWeathercloudConfigFlow(ConfigFlow, domain=DOMAIN):
                 )
 
             if not errors:
-                return self.async_update_reload_and_abort(
-                    entry, unique_id=new_uid, data=new_data
-                )
+                update: dict[str, Any] = {"unique_id": new_uid, "data": new_data}
+                if city_changed:
+                    # The title carries the locality name (see locality_name).
+                    update["title"] = f"{DEFAULT_NAME} - {cities.get(city, city)}"
+                return self.async_update_reload_and_abort(entry, **update)
 
         schema = self.add_suggested_values_to_schema(
             vol.Schema(
                 {
+                    vol.Optional(CONF_CITY): _city_selector(cities),
                     vol.Optional(CONF_WC_DEVICE_ID): str,
                     vol.Optional(CONF_WC_USERNAME): str,
                     vol.Optional(CONF_WC_PASSWORD): _PASSWORD_SELECTOR,
                 }
             ),
             {
+                CONF_CITY: (user_input or {}).get(CONF_CITY) or current_city,
                 CONF_WC_DEVICE_ID: (user_input or current).get(CONF_WC_DEVICE_ID, ""),
                 CONF_WC_USERNAME: (user_input or current).get(CONF_WC_USERNAME, ""),
             },

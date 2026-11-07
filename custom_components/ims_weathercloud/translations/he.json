@@ -22,9 +22,10 @@
         }
       },
       "reconfigure": {
-        "title": "תחנת Weathercloud",
-        "description": "שינוי תחנת ה-Weathercloud או פרטי ההתחברות. אפשר להשאיר את התחנה ריקה כדי להשתמש רק ב-IMS, ואת הסיסמה ריקה כדי לשמור את הסיסמה הקיימת.",
+        "title": "שינוי יישוב או תחנה",
+        "description": "שינוי היישוב של השירות המטאורולוגי, תחנת ה-Weathercloud או פרטי ההתחברות. אפשר להשאיר את התחנה ריקה כדי להשתמש רק ב-IMS, ואת הסיסמה ריקה כדי לשמור את הסיסמה הקיימת.",
         "data": {
+          "city": "יישוב",
           "wc_device_id": "מזהה תחנת Weathercloud - ספרות בלבד, בלי d",
           "wc_username": "שם משתמש Weathercloud (אופציונלי, לחיישני פנים)",
           "wc_password": "סיסמת Weathercloud"
@@ -48,7 +49,7 @@
     },
     "abort": {
       "already_configured": "מיקום זה כבר מוגדר.",
-      "reconfigure_successful": "הגדרות ה-Weathercloud עודכנו.",
+      "reconfigure_successful": "ההגדרות עודכנו.",
       "reauth_successful": "פרטי ההתחברות ל-Weathercloud עודכנו."
     }
   },
