@@ -20,7 +20,6 @@ except ImportError:  # older releases: one shared cached context
 from .const import (
     CONF_CITY,
     CONF_IMS_INTERVAL,
-    CONF_LANGUAGE,
     CONF_WC_DEVICE_ID,
     CONF_WC_INTERVAL,
     CONF_WC_PASSWORD,
@@ -31,6 +30,7 @@ from .const import (
     MS_TO_KMH,
     SOURCE_IMS,
     SOURCE_WEATHERCLOUD,
+    entry_language,
     ims_condition,
     ims_wind_bearing,
 )
@@ -109,7 +109,7 @@ class ImsWeathercloudCoordinator(DataUpdateCoordinator[MergedData]):
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
         self.entry = entry
         self._city = entry.data[CONF_CITY]
-        self.language: str = entry.data.get(CONF_LANGUAGE, "he")
+        self.language: str = entry_language(entry)
         self._wc_device_id: str | None = entry.data.get(CONF_WC_DEVICE_ID) or None
         self._wc_username: str | None = entry.data.get(CONF_WC_USERNAME) or None
         self._wc_password: str | None = entry.data.get(CONF_WC_PASSWORD) or None

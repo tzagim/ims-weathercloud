@@ -47,6 +47,7 @@ from .const import (
     DEFAULT_WC_INTERVAL,
     DOMAIN,
     MIN_INTERVAL,
+    entry_language,
     locality_name,
 )
 from .coordinator import create_weathercloud_http
@@ -290,9 +291,7 @@ class ImsWeathercloudConfigFlow(ConfigFlow, domain=DOMAIN):
         current = entry.data
         errors: dict[str, str] = {}
         current_city = str(current[CONF_CITY])
-        language = entry.options.get(
-            CONF_LANGUAGE, current.get(CONF_LANGUAGE, DEFAULT_LANGUAGE)
-        )
+        language = entry_language(entry)
 
         # The locality list comes only from IMS, in the entry's language.
         if self._cities_language != language:

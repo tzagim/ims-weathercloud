@@ -12,12 +12,14 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import UnitOfPressure, UnitOfSpeed, UnitOfTemperature
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.translation import async_get_translations
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import (
     CONF_STATION_LOCATION,
     DEFAULT_STATION_LOCATION,
     DOMAIN,
+    entry_language,
     ims_site_url,
     locality_name,
 )
@@ -28,7 +30,13 @@ async def async_setup_entry(
     hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
 ) -> None:
     coordinator: ImsWeathercloudCoordinator = hass.data[DOMAIN][entry.entry_id]
-    async_add_entities([ImsWeathercloudWeather(coordinator, entry)])
+    # Attribution text from translations/<lang>.json ("common" section), in
+    # the integration's language rather than the Home Assistant UI language.
+    strings = await async_get_translations(
+        hass, entry_language(entry), "common", {DOMAIN}
+    )
+    attribution = strings.get(f"component.{DOMAIN}.common.attribution")
+    async_add_entities([ImsWeathercloudWeather(coordinator, entry, attribution)])
 
 
 class ImsWeathercloudWeather(CoordinatorEntity[ImsWeathercloudCoordinator], WeatherEntity):
@@ -36,7 +44,6 @@ class ImsWeathercloudWeather(CoordinatorEntity[ImsWeathercloudCoordinator], Weat
 
     _attr_has_entity_name = True
     _attr_name = None  # use the device (locality) name
-    _attr_attribution = "Data provided by IMS / Weathercloud"
     _attr_native_temperature_unit = UnitOfTemperature.CELSIUS
     _attr_native_wind_speed_unit = UnitOfSpeed.KILOMETERS_PER_HOUR
     _attr_native_pressure_unit = UnitOfPressure.HPA
@@ -44,7 +51,12 @@ class ImsWeathercloudWeather(CoordinatorEntity[ImsWeathercloudCoordinator], Weat
         WeatherEntityFeature.FORECAST_DAILY | WeatherEntityFeature.FORECAST_HOURLY
     )
 
-    def __init__(self, coordinator: ImsWeathercloudCoordinator, entry: ConfigEntry) -> None:
+    def __init__(
+        self,
+        coordinator: ImsWeathercloudCoordinator,
+        entry: ConfigEntry,
+        attribution: str | None = None,
+    ) -> None:
         super().__init__(coordinator)
         self._show_location = bool(
             entry.options.get(
@@ -53,10 +65,11 @@ class ImsWeathercloudWeather(CoordinatorEntity[ImsWeathercloudCoordinator], Weat
             )
         )
         self._attr_unique_id = f"{entry.entry_id}_weather"
+        self._attr_attribution = attribution
         # (#5) device name = IMS locality
         name = locality_name(entry, coordinator.data)
         url = getattr(coordinator.data, "station_url", None) or ims_site_url(
-            entry.data.get("language")
+            entry_language(entry)
         )
         self._attr_device_info = {
             "identifiers": {(DOMAIN, entry.entry_id)},

@@ -46,6 +46,13 @@ MS_TO_KMH = 3.6
 WEATHERCLOUD_STATION_URL = "https://app.weathercloud.net/d{device_id}"
 
 
+def entry_language(entry: Any) -> str:
+    """The integration's language: the one set in Settings, else from setup."""
+    options = getattr(entry, "options", None) or {}
+    data = getattr(entry, "data", None) or {}
+    return options.get(CONF_LANGUAGE) or data.get(CONF_LANGUAGE) or DEFAULT_LANGUAGE
+
+
 def ims_site_url(language: str | None) -> str:
     """IMS site in the language the user picked (fallback link when no station)."""
     lang = "en" if str(language).lower().startswith("en") else "he"

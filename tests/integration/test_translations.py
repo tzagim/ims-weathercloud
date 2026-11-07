@@ -80,6 +80,9 @@ async def test_every_form_field_is_translated(hass: HomeAssistant, language: str
         f"config.abort.{a}" for a in CONFIG_ABORTS
         if not config.get(f"component.{DOMAIN}.config.abort.{a}")
     ]
+    common = await async_get_translations(hass, language, "common", [DOMAIN])
+    if not common.get(f"component.{DOMAIN}.common.attribution"):
+        missing.append("common.attribution")
     for step, fields in OPTIONS_FIELDS.items():
         missing += [
             f"options.step.{step}.data.{f}" for f in fields
