@@ -1,6 +1,9 @@
 {
   "domain": "ims_weathercloud",
   "name": "IMS + Weathercloud integration",
+  "categories": [
+    "weather_alerts.forecasts"
+  ],
   "codeowners": [
     "@tzagim"
   ],
@@ -15,5 +18,5 @@
     "weatheril~=0.41.0",
     "weathercloud>=1.0.0,<2"
   ],
-  "version": "1.2.0"
+  "version": "1.2.1"
 }
